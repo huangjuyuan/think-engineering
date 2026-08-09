@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>商品管理 - TinyPHP Admin</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon.png">
+    <!-- Custom Stylesheet -->
+    <link href="../plugins/tables/css/datatable/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="../plugins/bootstrap-tagsinput/css/bootstrap-tagsinput.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div id="main-wrapper">
+
+        <!-- 公共 Header（由 common/header.html 动态加载：preloader + nav-header + header） -->
+        <div id="app-header"></div>
+
+        <!-- 公共 Sidebar（由 common/sidebar.html 动态加载） -->
+        <div id="app-sidebar"></div>
+
+        <!-- Content body start -->
+        <div class="content-body">
+
+            <div class="row page-titles mx-0">
+                <div class="col p-md-0">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="javascript:void(0)">后台管理</a></li>
+                        <li class="breadcrumb-item active"><a href="javascript:void(0)">商品管理</a></li>
+                    </ol>
+                </div>
+            </div>
+            <!-- row -->
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h4 class="card-title mb-0">商品列表</h4>
+                                    <a href="edit.html" class="btn btn-primary">
+                                        <i class="icon-plus"></i> 新增商品
+                                    </a>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered zero-configuration" id="goodsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>商品图片</th>
+                                                <th>商品名称</th>
+                                                <th>分类</th>
+                                                <th>价格</th>
+                                                <th>库存</th>
+                                                <th>状态</th>
+                                                <th style="width:160px">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="goodsTbody">
+                                            <!-- AJAX 加载的商品列表数据 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- #/ container -->
+        </div>
+        <!-- Content body end -->
+
+        <!-- 公共 Footer（由 common/footer.html 动态加载） -->
+        <div id="app-footer"></div>
+
+    </div>
+    <!-- Main wrapper end -->
+
+    <!-- 操作结果提示 Modal -->
+    <div class="modal fade" id="msgModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div id="msgModalBody" class="mb-3"></div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认 Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalTitle">确认</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body" id="confirmModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" id="confirmOkBtn">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../plugins/common/common.min.js"></script>
+    <script src="../js/custom.min.js"></script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/gleek.js"></script>
+    <script src="../js/styleSwitcher.js"></script>
+
+    <script src="../plugins/tables/js/jquery.dataTables.min.js"></script>
+    <script src="../plugins/tables/js/datatable/dataTables.bootstrap4.min.js"></script>
+    <script src="../plugins/tables/js/datatable-init/datatable-basic.min.js"></script>
+
+    <!-- bootstrap-tagsinput 标签输入插件 -->
+    <script src="../plugins/bootstrap-tagsinput/js/bootstrap-tagsinput.min.js"></script>
+
+    <!-- 公共组件加载逻辑（引入公共 JS，必须在 common.min.js 之后） -->
+    <script src="../js/common.js"></script>
+
+    <!-- 商品管理操作逻辑 -->
+    <script>
+        // ======= Bootstrap 弹窗封装（提示/确认） =======
+
+        // 通用提示弹窗
+        function showMsg(title, message, type) {
+            type = type || 'info';
+            var icon = {
+                success: '<i class="fa fa-check-circle text-success" style="font-size:40px"></i>',
+                error: '<i class="fa fa-times-circle text-danger" style="font-size:40px"></i>',
+                warning: '<i class="fa fa-exclamation-triangle text-warning" style="font-size:40px"></i>',
+                info: '<i class="fa fa-info-circle text-info" style="font-size:40px"></i>'
+            };
+            $('#msgModalTitle').text(title);
+            $('#msgModalBody').html((icon[type] || icon.info) + '<p class="m-t-15 m-b-0">' + message + '</p>');
+            $('#msgModal').modal('show');
+        }
+
+        // 确认弹窗（带回调）
+        function showConfirm(title, message, callback) {
+            $('#confirmModalTitle').text(title);
+            $('#confirmModalBody').text(message);
+            // 绑定确认按钮回调
+            $('#confirmOkBtn').off('click').on('click', function () {
+                $('#confirmModal').modal('hide');
+                if (typeof callback === 'function') callback();
+            });
+            $('#confirmModal').modal('show');
+        }
+
+        // 初始化商品标签输入组件（bootstrap-tagsinput）
+        $(function () {
+            $('#goodsTags').tagsinput({
+                maxTags: 8,          // 最多 8 个标签
+                trimValue: true,     // 自动去空格
+                confirmKeys: [13, 44] // 回车(13) 和 逗号(44) 添加标签
+            });
+            // 用逗号分隔，默认 tagsinput 也支持逗号自动分隔
+            $('#goodsTags').tagsinput('input').attr('placeholder', '输入标签后回车添加');
+        });
+
+        // 图片预览
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#previewImg').attr('src', e.target.result).show();
+                };
+                reader.readAsDataURL(input.files[0]);
+                $('#imageLabel').text(input.files[0].name);
+            }
+        }
+
+        // ======= AJAX 数据加载 =======
+
+        // 加载商品列表（通过框架路由 /backend/goods/list）
+        function loadGoods() {
+            $.get('/backend/goods/list', function (res) {
+                if (res.code !== 0) {
+                    showMsg('提示', res.msg || '加载商品列表失败', 'error');
+                    return;
+                }
+                var $tbody = $('#goodsTbody');
+                $tbody.empty();
+                $.each(res.data, function (i, g) {
+                    var statusHtml = g.status == 1
+                        ? '<span class="badge badge-success">上架</span>'
+                        : '<span class="badge badge-warning">下架</span>';
+                    var img = (g.img_url || 'images/avatar/avatar-media.png').indexOf('http') === 0
+                        ? g.img_url : '../' + (g.img_url || 'images/avatar/avatar-media.png');
+
+                    $tbody.append(
+                        '<tr>' +
+                            '<td>' + g.id + '</td>' +
+                            '<td><img src="' + img + '" class="rounded" width="50" height="50" alt=""></td>' +
+                            '<td>' + g.name + '</td>' +
+                            '<td>' + (g.category || '') + '</td>' +
+                            '<td>¥' + Number(g.price).toFixed(2) + '</td>' +
+                            '<td>' + g.stock + '</td>' +
+                            '<td>' + statusHtml + '</td>' +
+                            '<td>' +
+                                '<button class="btn btn-sm btn-primary" onclick="location.href=\'edit.html?id=' + g.id + '\'"><i class="icon-pencil"></i></button> ' +
+                                '<button class="btn btn-sm btn-danger" onclick="deleteGoods(' + g.id + ')"><i class="icon-trash"></i></button>' +
+                            '</td>' +
+                        '</tr>'
+                    );
+                });
+            }, 'json').fail(function () {
+                showMsg('提示', '请求失败，请检查 API 地址', 'error');
+            });
+        }
+
+        // 删除商品（AJAX）
+        function deleteGoods(id) {
+            showConfirm('删除确认', '确定要删除商品 ' + id + ' 吗？', function () {
+                $.post('/backend/goods/delete', { id: id }, function (res) {
+                    if (res.code === 0) {
+                        showMsg('操作成功', '删除商品成功', 'success');
+                        loadGoods();  // 刷新列表
+                    } else {
+                        showMsg('提示', res.msg || '删除失败', 'error');
+                    }
+                }, 'json').fail(function () {
+                    showMsg('提示', '请求失败，请检查 API 地址', 'error');
+                });
+            });
+        }
+
+        // 页面加载时获取列表数据
+        $(function () {
+            loadGoods();
+        });
+    </script>
+
+</body>
+
+</html>

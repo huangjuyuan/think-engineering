@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>编辑商品 - TinyPHP Admin</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon.png">
+    <!-- Custom Stylesheet -->
+    <link href="../plugins/bootstrap-tagsinput/css/bootstrap-tagsinput.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div id="main-wrapper">
+
+    <!-- 公共 Header（由 js/common.js 加载） -->
+    <div id="app-header"></div>
+
+    <!-- 公共 Sidebar（由 js/common.js 加载） -->
+    <div id="app-sidebar"></div>
+
+    <!-- Content body start -->
+    <div class="content-body">
+
+            <div class="row page-titles mx-0">
+                <div class="col p-md-0">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="list.html">商品管理</a></li>
+                        <li class="breadcrumb-item active" id="pageActiveTitle">编辑商品</li>
+                    </ol>
+                </div>
+            </div>
+        <!-- row -->
+
+        <div class="container-fluid">
+            <div class="row">
+                <!-- 左侧：商品图片 -->
+                <div class="col-lg-4 col-xl-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">商品图片</h4>
+                            <div class="text-center">
+                                <img id="previewImg" src="../images/avatar/1.jpg" alt="商品图片"
+                                     style="max-width:100%; max-height:240px; border-radius:4px; border:1px solid #ddd;">
+                            </div>
+                            <div class="custom-file mt-4">
+                                <input type="file" class="custom-file-input" id="goodsImage" name="image"
+                                       accept="image/*" onchange="previewImage(this)">
+                                <label class="custom-file-label" for="goodsImage" id="imageLabel">更换图片</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 右侧：编辑表单 -->
+                <div class="col-lg-8 col-xl-9">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="card-title m-0">商品信息编辑</h4>
+                                <a href="list.html" class="btn btn-secondary"><i class="icon-arrow-left"></i> 返回列表</a>
+                            </div>
+                            <form id="goodsForm" enctype="multipart/form-data" class="basic-form">
+                                <input type="hidden" id="goodsId" name="id">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="goodsName">商品名称</label>
+                                            <input type="text" class="form-control" id="goodsName" name="name"
+                                                   placeholder="请输入商品名称">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="category">商品分类</label>
+                                            <select class="form-control" id="category" name="category">
+                                                <option value="电子课程">电子课程</option>
+                                                <option value="实体商品">实体商品</option>
+                                                <option value="软件工具">软件工具</option>
+                                                <option value="其他">其他</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="price">价格</label>
+                                            <input type="number" class="form-control" id="price" name="price"
+                                                   placeholder="请输入价格" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="stock">库存</label>
+                                            <input type="number" class="form-control" id="stock" name="stock"
+                                                   placeholder="请输入库存">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="goodsStatus">状态</label>
+                                            <select class="form-control" id="goodsStatus" name="status">
+                                                <option value="1" selected>上架</option>
+                                                <option value="0">下架</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>商品标签</label>
+                                            <input type="text" class="form-control" id="goodsTags" name="tags"
+                                                   placeholder="输入标签后回车添加">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>商品描述</label>
+                                            <textarea class="form-control h-100px" id="description" rows="4"
+                                                      placeholder="商品详细描述"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <button type="button" class="btn btn-primary px-5" onclick="saveGoods()"><i
+                                            class="icon-check"></i> 保存
+                                    </button>
+                                    <a href="list.html" class="btn btn-secondary px-4 ml-2">取消</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- #/ container -->
+    </div>
+    <!-- Content body end -->
+
+    <!-- 公共 Footer（由 js/common.js 加载） -->
+    <div id="app-footer"></div>
+
+</div>
+<!-- Main wrapper end -->
+
+<!-- 操作结果提示 Modal -->
+<div class="modal fade" id="msgModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div id="msgModalBody" class="mb-3"></div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="../plugins/common/common.min.js"></script>
+<script src="../js/custom.min.js"></script>
+<script src="../js/settings.js"></script>
+<script src="../js/gleek.js"></script>
+<script src="../js/styleSwitcher.js"></script>
+
+<!-- bootstrap-tagsinput 标签输入插件 -->
+<script src="../plugins/bootstrap-tagsinput/js/bootstrap-tagsinput.min.js"></script>
+
+<!-- 公共组件加载逻辑（引入公共 JS，必须在 common.min.js 之后） -->
+<script src="../js/common.js"></script>
+
+<!-- 商品编辑逻辑 -->
+<script>
+    // 通用提示弹窗
+    function showMsg(title, message, type) {
+        type = type || 'info';
+        var icon = {
+            success: '<i class="fa fa-check-circle text-success" style="font-size:40px"></i>',
+            error: '<i class="fa fa-times-circle text-danger" style="font-size:40px"></i>',
+            warning: '<i class="fa fa-exclamation-triangle text-warning" style="font-size:40px"></i>',
+            info: '<i class="fa fa-info-circle text-info" style="font-size:40px"></i>'
+        };
+        $('#msgModalBody').html((icon[type] || icon.info) + '<p class="m-t-15 m-b-0">' + message + '</p>');
+        $('#msgModal').modal('show');
+    }
+
+    // 图片预览
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#previewImg').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+            $('#imageLabel').text(input.files[0].name);
+        }
+    }
+
+    // 初始化标签输入组件
+    $(function () {
+        $('#goodsTags').tagsinput({
+            maxTags: 8,
+            trimValue: true,
+            confirmKeys: [13, 44]
+        });
+        $('#goodsTags').tagsinput('input').attr('placeholder', '输入标签后回车添加');
+
+        // 页面加载时，AJAX 获取商品数据并回填
+        var id = new URLSearchParams(window.location.search).get('id') || '';
+        $('#goodsId').val(id);
+
+        if (id) {
+            // 编辑模式：AJAX 获取单个商品数据（通过框架路由 /backend/goods/get）
+            $('#pageActiveTitle').text('编辑商品');
+            $.get('/backend/goods/get', { id: id }, function (res) {
+                if (res.code === 0) {
+                    var data = res.data;
+                    $('#goodsName').val(data.name);
+                    $('#category').val(data.category || '');
+                    $('#price').val(data.price);
+                    $('#stock').val(data.stock);
+                    $('#goodsStatus').val(data.status);
+                    $('#description').val(data.description || '');
+                    if (data.img_url) {
+                        $('#previewImg').attr('src', data.img_url.indexOf('http') === 0 ? data.img_url : '../' + data.img_url);
+                    }
+                    // 回填标签
+                    $.each(data.tags || [], function (i, tag) {
+                        $('#goodsTags').tagsinput('add', tag);
+                    });
+                } else {
+                    showMsg('提示', res.msg || '加载商品数据失败', 'error');
+                }
+            }, 'json').fail(function () {
+                showMsg('提示', '请求失败，请检查 API 地址', 'error');
+            });
+        }
+    });
+
+    // 保存商品（AJAX 提交）
+    function saveGoods() {
+        var name = $('#goodsName').val();
+        var price = $('#price').val();
+        var stock = $('#stock').val();
+        if (!name || !price || !stock) {
+            showMsg('提示', '商品名称、价格、库存不能为空', 'warning');
+            return;
+        }
+        var id = $('#goodsId').val();
+        var tags = $('#goodsTags').tagsinput('items');
+        var fileInput = $('#goodsImage')[0].files[0];
+
+        var formData = {
+            id: id,
+            name: name,
+            category: $('#category').val(),
+            price: price,
+            stock: stock,
+            status: $('#goodsStatus').val(),
+            tags: tags.join(','),        // 标签数组转逗号分隔字符串
+            description: $('#description').val()
+        };
+        if (fileInput) {
+            formData.img_url = 'images/avatar/' + fileInput.name;  // 假 API 演示：图片名映射
+        }
+
+        // AJAX 提交（假 API 演示，通过框架路由 /backend/goods/save）
+        $.post('/backend/goods/save', formData, function (res) {
+            if (res.code === 0) {
+                showMsg('操作成功', res.msg, 'success');
+            } else {
+                showMsg('提示', res.msg || '保存失败', 'error');
+            }
+        }, 'json').fail(function () {
+            showMsg('提示', '请求失败，请检查 API 地址', 'error');
+        });
+    }
+</script>
+
+</body>
+
+</html>
