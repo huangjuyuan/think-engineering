@@ -1,6 +1,19 @@
 <!-- Sidebar start -->
 <div class="nk-sidebar">
     <div class="nk-nav-scroll">
+        <!-- 登录状态区（由 common.js 中的登录逻辑驱动） -->
+        <div class="sidebar-login p-3 border-bottom" id="loginArea">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="login-user text-white">
+                    <i class="icon-user"></i>
+                    <span id="loginUser">未登录</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary" id="btnLogin" onclick="openLoginModal()">
+                    <i class="icon-key"></i> 登录
+                </button>
+            </div>
+        </div>
+
         <li class="nav-label">Apps</li>
 
         <ul class="metismenu" id="menu">
@@ -19,3 +32,58 @@
     </div>
 </div>
 <!-- Sidebar end -->
+
+<!-- 登录弹窗（Bootstrap Modal） -->
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">后台登录</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginUsername">用户名</label>
+                        <input type="text" class="form-control" id="loginUsername" placeholder="请输入用户名" value="admin">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">密码</label>
+                        <input type="password" class="form-control" id="loginPassword" placeholder="请输入密码" value="123456">
+                    </div>
+                    <div id="loginMsg" class="text-danger mb-2" style="min-height:20px;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitLogin()">登录</button>
+            </div>
+            <div class="modal-body text-center border-top">
+                <span class="text-muted">还没有账号？</span>
+                <a href="../user/register.html" onclick="$('#loginModal').modal('hide')">立即注册</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--
+  登录逻辑说明：
+  由于本片段通过 jQuery .load() 异步加载，<script> 不会自动执行，
+  因此登录逻辑统一写在 view/backend/js/common.js 的 sidebar 加载回调中
+  （doLogin / renderLoginState / logout 均已挂载到 window）。
+  此处仅保留触发函数：openLoginModal() 打开弹窗、submitLogin() 提交登录。
+-->
+<script>
+    // 打开登录弹窗
+    function openLoginModal() {
+        $('#loginMsg').text('');
+        $('#loginModal').modal('show');
+    }
+
+    // 提交登录（实际实现 window.doLogin 见 common.js）
+    function submitLogin() {
+        if (typeof doLogin === 'function') {
+            doLogin();
+        }
+    }
+</script>
