@@ -1,15 +1,18 @@
 # PhpStorm / JetBrains IDE 相关
-# 核心：忽略整个 .idea 目录和所有 .iml 文件
 .idea/
 *.iml
 *.ipr
 *.iws
 
 # PHP 项目通用依赖与缓存
-/vendor/               # Composer 依赖包
+# Composer 依赖包（不提交，通过 composer install 重建）
+/vendor/
+# 本地 Composer 可执行文件（不提交）
+composer.phar
+# 应用类项目(type=project)建议提交 composer.lock 以锁定依赖版本，故不忽略
 
 # 环境配置与敏感信息
-.env                   # 本地环境变量（非常重要！）
+.env
 .env.*.local
 *.local
 

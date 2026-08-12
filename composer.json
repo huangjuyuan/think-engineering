@@ -1,0 +1,23 @@
+{
+    "name": "tinyphp/think-engineering",
+    "description": "TinyPHP 极简 MVC 框架 - 后台管理系统",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.3",
+        "symfony/yaml": "^5.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "utils\\": "utils/",
+            "model\\": "model/",
+            "controller\\": "controller/",
+            "config\\": "config/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "7.3.19"
+        }
+    }
+}
