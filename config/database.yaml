@@ -1,0 +1,15 @@
+# =============================================================
+# 数据库配置文件（YAML 格式）
+# 由 \utils\Db 连接类通过 symfony/yaml 解析加载。
+# 库名 think_engineering 见 database/migration.sql
+# =============================================================
+
+# 默认连接（主库，读写）
+#default:
+#  host: 127.0.0.1            # 数据库主机
+#  port: 3306                 # 端口
+#  database: think_engineering # 库名
+#  username: root             # 用户名
+#  password: ''               # 密码
+#  charset: utf8mb4           # 字符集
+#  prefix: te_                # 表前缀（可选）
