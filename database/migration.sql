@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `te_user` (
     `updated_at`  DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_username` (`username`),
-    KEY `idx_role` (`role`),
+    KEY `idx_role` (`role`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='用户表';
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `te_goods` (
     `created_at`  DATETIME          NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at`  DATETIME          NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx_name` (`name`),
+    KEY `idx_name` (`name`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='商品表';
@@ -87,8 +87,8 @@ INSERT INTO `te_goods` (`name`, `price`, `stock`, `description`) VALUES
     ('商品3', 29.90, 20, '演示商品3');
 
 INSERT INTO `te_tags` (`gid`, `name`) VALUES
-    (1, '人気'),
+    (1, '人气'),
     (1, '新作'),
-    (2, '特価'),
-    (3, '輸入品'),
+    (2, '特价'),
+    (3, '进口品'),
     (3, '限定');
