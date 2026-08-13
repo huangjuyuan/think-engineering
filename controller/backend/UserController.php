@@ -3,6 +3,7 @@
 namespace controller\backend;
 
 use model\UserModel;
+use utils\Auth;
 use utils\Response;
 use utils\Upload;
 use utils\Validator;
@@ -253,6 +254,36 @@ class UserController
             $id = intval($_POST['id']);
             $this->model->deleteUser($id);
             Response::json(['id' => $id], 0, '删除成功');
+        } catch (\Throwable $e) {
+            Response::json(null, 1, $e->getMessage());
+        }
+    }
+
+    /**
+     * 获取当前登录用户信息（含头像）
+     * GET /backend/user/profile
+     *
+     * 通过 Authorization: Bearer <token> 解析当前用户。
+     */
+    public function profile()
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                Response::json(null, 401, '未登录或登录已过期');
+            }
+
+            $info = $this->model->getUserById((int) $user['uid']);
+            if (!$info) {
+                Response::json(null, 1, '用户不存在');
+            }
+
+            // 确保返回头像地址（含相对路径约定，前端以 / 前缀访问）
+            if (empty($info['avatar'])) {
+                $info['avatar'] = 'view/backend/images/avatar/avatar-media.png';
+            }
+
+            Response::json($info);
         } catch (\Throwable $e) {
             Response::json(null, 1, $e->getMessage());
         }

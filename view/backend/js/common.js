@@ -19,13 +19,37 @@ $(function () {
     }
 
     // 依次加载公共组件到占位容器
-    $('#app-header').load('../common/header.html');
+    $('#app-header').load('../common/header.html', function () {
+        loadCurrentUser();     // 加载 header 后更新当前用户头像
+    });
     $('#app-footer').load('../common/footer.html');
     // 侧边栏加载完成后，从接口拉取菜单并动态渲染
     $('#app-sidebar').load('../common/sidebar.html', function () {
         loadMenu();
     });
 });
+
+/**
+ * 加载当前登录用户信息，更新 header 头像
+ */
+function loadCurrentUser() {
+    var token = localStorage.getItem('loginToken') || '';
+    if (!token) return;
+
+    $.ajax({
+        url: '/backend/user/profile',
+        type: 'GET',
+        headers: { 'Authorization': 'Bearer ' + token },
+        dataType: 'json',
+        success: function (res) {
+            if (res.code === 0 && res.data) {
+                var avatar = res.data.avatar || 'view/backend/images/avatar/avatar-media.png';
+                var src = avatar.indexOf('http') === 0 ? avatar : '/' + avatar;
+                $('#headerUserAvatar').attr('src', src);
+            }
+        }
+    });
+}
 
 /**
  * 退出登录：清除本地登录态并跳转到登录页
@@ -40,12 +64,18 @@ function doLogout() {
 /**
  * 渲染单个菜单节点（递归，支持多级）
  * @param {Object} node 菜单节点：{id, pid, title, icon, url, type, children}
+ * @param {number} depth 当前层级（0=顶级，>0=子菜单）
  * @returns {string} li 的 HTML
  */
-function renderMenuItem(node) {
+function renderMenuItem(node, depth) {
+    depth = depth || 0;
     var hasChildren = node.children && node.children.length > 0;
-    var icon = node.icon ? '<i class="' + node.icon + ' menu-icon"></i>' : '<i class="icon-doc menu-icon"></i>';
-    var text = '<span class="nav-text">' + (node.title || '') + '</span>';
+    var icon = node.icon ? '<i class="' + node.icon + ' menu-icon"></i>' : '';
+    // 顶级项用 nav-text（折叠时隐藏，hover 展开顶级 a 时显示）；
+    // 子菜单项用纯文字（避免折叠状态下被 .nav-text{display:none} 隐藏导致错乱）
+    var text = depth === 0
+        ? '<span class="nav-text">' + (node.title || '') + '</span>'
+        : (node.title || '');
 
     // 目录（可展开）或含子节点的菜单
     if (hasChildren || node.type == 1) {
@@ -54,7 +84,7 @@ function renderMenuItem(node) {
         if (hasChildren) {
             sub = '<ul aria-expanded="false">';
             node.children.forEach(function (child) {
-                sub += renderMenuItem(child);
+                sub += renderMenuItem(child, depth + 1);
             });
             sub += '</ul>';
         }

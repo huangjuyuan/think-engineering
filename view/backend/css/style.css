@@ -14699,4 +14699,20 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
     [data-theme-version="dark"] .footer .copyright p {
       color: #fff; }
 
+/* ========== 侧边栏折叠后 hover 展开子菜单的显示修复 ========== */
+/* 折叠状态（menu-toggle）下，顶级目录 hover 展开的子菜单是绝对定位的，
+   可能因缺少背景色/文字色而错乱。这里用 !important 强制保证可读性。 */
+.menu-toggle .nk-sidebar .metismenu > li:hover > ul {
+  background-color: #fff !important;
+  box-shadow: 0 0.9375rem 1.875rem 0 rgba(0, 0, 0, 0.1);
+  border-radius: 0 0.25rem 0.25rem 0;
+}
+.menu-toggle .nk-sidebar .metismenu > li:hover > ul a {
+  color: #76838f !important;
+}
+.menu-toggle .nk-sidebar .metismenu > li:hover > ul a:hover {
+  color: #7571f9 !important;
+  background-color: #f2f2ff !important;
+}
+
 /*# sourceMappingURL=style.css.map */
