@@ -207,8 +207,8 @@
                             {
                                 data: null,
                                 render: function (data) {
-                                    var img = (data.img_url || 'images/avatar/avatar-media.png');
-                                    var src = img.indexOf('http') === 0 ? img : '../' + img;
+                                    var img = (data.img_url || 'view/backend/images/avatar/avatar-media.png');
+                                    var src = img.indexOf('http') === 0 ? img : '/' + img;
                                     return '<img src="' + src + '" class="rounded" width="50" height="50" alt="">';
                                 }
                             },

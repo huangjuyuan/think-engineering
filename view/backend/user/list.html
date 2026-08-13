@@ -195,8 +195,8 @@
                         {
                             data: null,
                             render: function (data) {
-                                var avatar = (data.avatar || 'images/avatar/avatar-media.png');
-                                var src = avatar.indexOf('http') === 0 ? avatar : '../' + avatar;
+                                var avatar = (data.avatar || 'view/backend/images/avatar/avatar-media.png');
+                                var src = avatar.indexOf('http') === 0 ? avatar : '/' + avatar;
                                 return '<img src="' + src + '" class="rounded-circle" width="40" height="40" alt="">';
                             }
                         },

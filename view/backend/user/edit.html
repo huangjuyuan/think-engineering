@@ -210,8 +210,8 @@
                         $('#profileUsername').text(data.nickname);
                         $('#profileRole').text(data.role === 'admin' ? '管理员' : '普通用户');
                         if (data.avatar) {
-                            // 假 API 返回相对路径，统一拼上 ../ 前缀（真实场景直接用完整路径）
-                            $('#avatarPreview').attr('src', data.avatar.indexOf('http') === 0 ? data.avatar : '../' + data.avatar);
+                            // 图片地址统一以 / 前缀访问（相对项目根）
+                            $('#avatarPreview').attr('src', data.avatar.indexOf('http') === 0 ? data.avatar : '/' + data.avatar);
                         }
                     } else {
                         showMsg('提示', res.msg || '加载用户数据失败', 'error');
@@ -237,30 +237,45 @@
             }
 
             var id = $('#userId').val();
-            var formData = {
-                id: id,
-                username: username,
-                nickname: nickname,
-                email: $('#email').val(),
-                password: $('#password').val(),
-                role: $('#role').val(),
-                status: $('#status').val(),
-                remark: $('#remark').val()
-            };
 
-            // AJAX 提交（假 API 演示，通过框架路由 /backend/user/save）
-            $.post('/backend/user/save', formData, function (res) {
-                if (res.code === 0) {
-                    showMsg('操作成功', res.msg, 'success');
-                    // 保存成功后延迟 1 秒跳转回用户列表页
-                    setTimeout(function () {
-                        location.href = 'list.html';
-                    }, 1000);
-                } else {
-                    showMsg('提示', res.msg || '保存失败', 'error');
+            // 使用 FormData 提交，支持头像文件上传（multipart/form-data）
+            var formData = new FormData();
+            formData.append('id', id);
+            formData.append('username', username);
+            formData.append('nickname', nickname);
+            formData.append('email', $('#email').val());
+            formData.append('password', $('#password').val());
+            formData.append('role', $('#role').val());
+            formData.append('status', $('#status').val());
+            formData.append('remark', $('#remark').val());
+            // 追加头像文件（若选择了新头像）
+            var avatarInput = $('#avatarInput')[0].files[0];
+            if (avatarInput) {
+                formData.append('avatar', avatarInput);
+            }
+
+            // AJAX 提交（通过框架路由 /backend/user/save，multipart 上传）
+            $.ajax({
+                url: '/backend/user/save',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 0) {
+                        showMsg('操作成功', res.msg, 'success');
+                        // 保存成功后延迟 1 秒跳转回用户列表页
+                        setTimeout(function () {
+                            location.href = 'list.html';
+                        }, 1000);
+                    } else {
+                        showMsg('提示', res.msg || '保存失败', 'error');
+                    }
+                },
+                error: function () {
+                    showMsg('提示', '请求失败，请检查 API 地址', 'error');
                 }
-            }, 'json').fail(function () {
-                showMsg('提示', '请求失败，请检查 API 地址', 'error');
             });
         }
     </script>
