@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>编辑节点 - TinyPHP Admin</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon.png">
+    <!-- Custom Stylesheet -->
+    <link href="../css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div id="main-wrapper">
+
+        <!-- 公共 Header（由 js/common.js 加载） -->
+        <div id="app-header"></div>
+
+        <!-- 公共 Sidebar（由 js/common.js 加载） -->
+        <div id="app-sidebar"></div>
+
+        <!-- Content body start -->
+        <div class="content-body">
+
+            <div class="row page-titles mx-0">
+                <div class="col p-md-0">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="list.html">节点管理</a></li>
+                        <li class="breadcrumb-item active" id="pageActiveTitle">新增节点</li>
+                    </ol>
+                </div>
+            </div>
+            <!-- row -->
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title m-3" id="formTitle">新增菜单节点</h4>
+                                <form id="menuForm" class="basic-form">
+                                    <input type="hidden" id="menuId" name="id">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="pid">父级节点</label>
+                                                <select class="form-control" id="pid" name="pid">
+                                                    <option value="0">作为顶级节点</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="menuTitle">节点名称 <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="menuTitle" name="title" placeholder="请输入节点名称">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="icon">图标 class</label>
+                                                <input type="text" class="form-control" id="icon" name="icon" placeholder="如 icon-user">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="type">节点类型</label>
+                                                <select class="form-control" id="type" name="type">
+                                                    <option value="1">目录（可展开）</option>
+                                                    <option value="2">菜单（可点击链接）</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="url">链接地址</label>
+                                                <input type="text" class="form-control" id="url" name="url" placeholder="如 /view/backend/user/list.html（目录节点可为空）">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="sort">排序权重</label>
+                                                <input type="number" class="form-control" id="sort" name="sort" value="0" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="status">状态</label>
+                                                <select class="form-control" id="status" name="status">
+                                                    <option value="1" selected>启用</option>
+                                                    <option value="0">禁用</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button type="button" class="btn btn-primary px-5" onclick="saveMenu()"><i class="icon-check"></i> 保存</button>
+                                        <a href="list.html" class="btn btn-secondary px-4 ml-2">取消</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- #/ container -->
+        </div>
+        <!-- Content body end -->
+
+        <!-- 公共 Footer（由 js/common.js 加载） -->
+        <div id="app-footer"></div>
+
+    </div>
+    <!-- Main wrapper end -->
+
+    <!-- 操作结果提示 Modal -->
+    <div class="modal fade" id="msgModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div id="msgModalBody" class="mb-3"></div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../plugins/common/common.min.js"></script>
+    <script src="../js/custom.min.js"></script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/gleek.js"></script>
+    <script src="../js/styleSwitcher.js"></script>
+
+    <!-- 公共组件加载逻辑（引入公共 JS，必须在 common.min.js 之后） -->
+    <script src="../js/common.js"></script>
+
+    <!-- 节点编辑逻辑 -->
+    <script>
+        // 通用提示弹窗
+        function showMsg(title, message, type) {
+            type = type || 'info';
+            var icon = {
+                success: '<i class="fa fa-check-circle text-success" style="font-size:40px"></i>',
+                error: '<i class="fa fa-times-circle text-danger" style="font-size:40px"></i>',
+                warning: '<i class="fa fa-exclamation-triangle text-warning" style="font-size:40px"></i>',
+                info: '<i class="fa fa-info-circle text-info" style="font-size:40px"></i>'
+            };
+            $('#msgModalBody').html((icon[type] || icon.info) + '<p class="m-t-15 m-b-0">' + message + '</p>');
+            $('#msgModal').modal('show');
+        }
+
+        // 平铺菜单转树（用于父级下拉）
+        function buildTree(list) {
+            var nodes = {};
+            list.forEach(function (n) { n.children = []; nodes[n.id] = n; });
+            var roots = [];
+            list.forEach(function (n) {
+                if (n.pid > 0 && nodes[n.pid]) nodes[n.pid].children.push(n);
+                else roots.push(n);
+            });
+            return roots;
+        }
+
+        // 递归生成父级下拉选项（缩进显示层级）
+        function renderParentOptions(nodes, depth, excludeId, html) {
+            nodes.forEach(function (n) {
+                if (n.id == excludeId) return;  // 排除自身
+                html.push('<option value="' + n.id + '">' + '&nbsp;&nbsp;'.repeat(depth) + (depth > 0 ? '└─ ' : '') + n.title + '</option>');
+                if (n.children && n.children.length > 0) {
+                    renderParentOptions(n.children, depth + 1, excludeId, html);
+                }
+            });
+            return html;
+        }
+
+        // 加载父级下拉选项
+        function loadParentOptions(excludeId, currentPid) {
+            $.get('/backend/menu/all', function (res) {
+                if (res.code === 0 && res.data && res.data.list) {
+                    var roots = buildTree(res.data.list);
+                    var html = ['<option value="0">作为顶级节点</option>'];
+                    renderParentOptions(roots, 0, excludeId, html);
+                    $('#pid').html(html.join(''));
+                    if (currentPid !== undefined) {
+                        $('#pid').val(currentPid);
+                    }
+                }
+            }, 'json');
+        }
+
+        // 页面加载时
+        $(function () {
+            var id = new URLSearchParams(window.location.search).get('id') || '';
+            $('#menuId').val(id);
+
+            if (id) {
+                // 编辑模式
+                $('#pageActiveTitle').text('编辑节点');
+                $('#formTitle').text('编辑菜单节点');
+                $.get('/backend/menu/get', { id: id }, function (res) {
+                    if (res.code === 0) {
+                        var d = res.data;
+                        $('#menuTitle').val(d.title);
+                        $('#icon').val(d.icon || '');
+                        $('#type').val(d.type || 1);
+                        $('#url').val(d.url || '');
+                        $('#sort').val(d.sort || 0);
+                        $('#status').val(d.status || 1);
+                        // 加载父级下拉（排除自身）
+                        loadParentOptions(parseInt(id), parseInt(d.pid));
+                    } else {
+                        showMsg('提示', res.msg || '加载节点数据失败', 'error');
+                    }
+                }, 'json').fail(function () {
+                    showMsg('提示', '请求失败，请检查 API 地址', 'error');
+                });
+            } else {
+                // 新增模式
+                loadParentOptions(0, 0);
+            }
+        });
+
+        // 保存节点
+        function saveMenu() {
+            var title = $('#menuTitle').val().trim();
+            if (!title) {
+                showMsg('提示', '节点名称不能为空', 'warning');
+                return;
+            }
+
+            var formData = {
+                id: $('#menuId').val(),
+                pid: $('#pid').val(),
+                title: title,
+                icon: $('#icon').val().trim(),
+                type: $('#type').val(),
+                url: $('#url').val().trim(),
+                sort: $('#sort').val(),
+                status: $('#status').val()
+            };
+
+            $.post('/backend/menu/save', formData, function (res) {
+                if (res.code === 0) {
+                    showMsg('操作成功', res.msg, 'success');
+                    setTimeout(function () { location.href = 'list.html'; }, 1000);
+                } else {
+                    showMsg('提示', res.msg || '保存失败', 'error');
+                }
+            }, 'json').fail(function () {
+                showMsg('提示', '请求失败，请检查 API 地址', 'error');
+            });
+        }
+    </script>
+
+</body>
+
+</html>

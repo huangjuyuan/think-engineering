@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>角色管理 - TinyPHP Admin</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon.png">
+    <!-- Custom Stylesheet -->
+    <link href="../plugins/tables/css/datatable/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div id="main-wrapper">
+
+    <!-- 公共 Header（由 common/header.html 动态加载：preloader + nav-header + header） -->
+    <div id="app-header"></div>
+
+    <!-- 公共 Sidebar（由 common/sidebar.html 动态加载） -->
+    <div id="app-sidebar"></div>
+
+    <!-- Content body start -->
+    <div class="content-body">
+
+        <div class="row page-titles mx-0">
+            <div class="col p-md-0">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="javascript:void(0)">后台管理</a></li>
+                    <li class="breadcrumb-item active"><a href="javascript:void(0)">角色管理</a></li>
+                </ol>
+            </div>
+        </div>
+        <!-- row -->
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h4 class="card-title mb-0">角色列表</h4>
+                                <a href="edit.html" class="btn btn-primary">
+                                    <i class="icon-plus"></i> 新增角色
+                                </a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered" id="roleTable">
+                                    <thead>
+                                    <tr>
+                                        <th style="width:60px">ID</th>
+                                        <th>角色标识</th>
+                                        <th>角色名称</th>
+                                        <th>状态</th>
+                                        <th>创建时间</th>
+                                        <th style="width:180px">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="roleTbody">
+                                    <!-- AJAX 加载的角色列表数据 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- #/ container -->
+    </div>
+    <!-- Content body end -->
+
+    <!-- 公共 Footer（由 common/footer.html 动态加载） -->
+    <div id="app-footer"></div>
+
+</div>
+<!-- Main wrapper end -->
+
+<!-- 操作结果提示 Modal -->
+<div class="modal fade" id="msgModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div id="msgModalBody" class="mb-3"></div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认 Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalTitle">确认</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body" id="confirmModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmOkBtn">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="../plugins/common/common.min.js"></script>
+<script src="../js/custom.min.js"></script>
+<script src="../js/settings.js"></script>
+<script src="../js/gleek.js"></script>
+<script src="../js/styleSwitcher.js"></script>
+
+<script src="../plugins/tables/js/jquery.dataTables.min.js"></script>
+<script src="../plugins/tables/js/datatable/dataTables.bootstrap4.min.js"></script>
+
+<!-- 公共组件加载逻辑（引入公共 JS，必须在 common.min.js 之后） -->
+<script src="../js/common.js"></script>
+
+<!-- 角色管理操作逻辑 -->
+<script>
+    // ======= Bootstrap 弹窗封装（提示/确认） =======
+
+    function showMsg(title, message, type) {
+        type = type || 'info';
+        var icon = {
+            success: '<i class="fa fa-check-circle text-success" style="font-size:40px"></i>',
+            error: '<i class="fa fa-times-circle text-danger" style="font-size:40px"></i>',
+            warning: '<i class="fa fa-exclamation-triangle text-warning" style="font-size:40px"></i>',
+            info: '<i class="fa fa-info-circle text-info" style="font-size:40px"></i>'
+        };
+        $('#msgModalBody').html((icon[type] || icon.info) + '<p class="m-t-15 m-b-0">' + message + '</p>');
+        $('#msgModal').modal('show');
+    }
+
+    function showConfirm(title, message, callback) {
+        $('#confirmModalTitle').text(title);
+        $('#confirmModalBody').text(message);
+        $('#confirmOkBtn').off('click').on('click', function () {
+            $('#confirmModal').modal('hide');
+            if (typeof callback === 'function') callback();
+        });
+        $('#confirmModal').modal('show');
+    }
+
+    // ======= AJAX 数据加载 =======
+
+    var roleTable = null;
+
+    function loadRoles() {
+        $.get('/backend/role/list', function (res) {
+            if (res.code !== 0) {
+                showMsg('提示', res.msg || '加载角色列表失败', 'error');
+                return;
+            }
+            var list = res.data && res.data.list ? res.data.list : [];
+            var html = '';
+            list.forEach(function (r) {
+                var statusHtml = r.status == 1
+                    ? '<span class="badge badge-success">启用</span>'
+                    : '<span class="badge badge-secondary">禁用</span>';
+                html += '<tr>' +
+                    '<td>' + r.id + '</td>' +
+                    '<td><code>' + r.name + '</code></td>' +
+                    '<td>' + r.title + '</td>' +
+                    '<td>' + statusHtml + '</td>' +
+                    '<td>' + (r.created_at || '') + '</td>' +
+                    '<td>' +
+                        '<button class="btn btn-sm btn-primary" onclick="location.href=\'edit.html?id=' + r.id + '\'"><i class="icon-pencil"></i></button> ' +
+                        '<button class="btn btn-sm btn-danger" onclick="deleteRole(' + r.id + ')"><i class="icon-trash"></i></button>' +
+                    '</td>' +
+                    '</tr>';
+            });
+            $('#roleTbody').html(html);
+
+            if (roleTable === null) {
+                roleTable = $('#roleTable').DataTable({
+                    order: [[0, 'asc']],
+                    columnDefs: [{ targets: [2, 5], orderable: false }],
+                    language: {
+                        search: '搜索:',
+                        lengthMenu: '每页 _MENU_ 条',
+                        info: '显示 _START_ 至 _END_ 共 _TOTAL_ 条',
+                        paginate: { previous: '上一页', next: '下一页' }
+                    }
+                });
+            } else {
+                roleTable.clear().rows.add($('#roleTbody').find('tr')).draw();
+            }
+        }, 'json').fail(function () {
+            showMsg('提示', '请求失败，请检查 API 地址', 'error');
+        });
+    }
+
+    // 删除角色（AJAX）
+    function deleteRole(id) {
+        showConfirm('删除确认', '确定要删除该角色及其权限配置吗？', function () {
+            $.post('/backend/role/delete', { id: id }, function (res) {
+                if (res.code === 0) {
+                    showMsg('操作成功', res.msg, 'success');
+                    loadRoles();
+                } else {
+                    showMsg('提示', res.msg || '删除失败', 'error');
+                }
+            }, 'json').fail(function () {
+                showMsg('提示', '请求失败，请检查 API 地址', 'error');
+            });
+        });
+    }
+
+    // 页面加载时获取角色列表
+    $(function () {
+        loadRoles();
+    });
+</script>
+
+</body>
+
+</html>

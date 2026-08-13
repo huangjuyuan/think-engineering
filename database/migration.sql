@@ -120,11 +120,13 @@ INSERT INTO `te_tags` (`gid`, `name`) VALUES
 
 -- 侧边栏菜单种子数据（对应 sidebar.html 的两级结构）
 -- 顶级：控制面板（type=1 目录，可展开）
--- 子级：用户管理 / 商品管理（type=2 菜单，可点击链接）
+-- 子级：用户管理 / 商品管理 / 节点管理 / 角色管理（type=2 菜单，可点击链接）
 INSERT INTO `te_menu` (`pid`, `title`, `icon`, `url`, `type`, `sort`) VALUES
     (0, '控制面板', 'icon-speedometer', NULL, 1, 1),
     (1, '用户管理', 'icon-user', '/view/backend/user/list.html', 2, 1),
-    (1, '商品管理', 'icon-bag', '/view/backend/goods/list.html', 2, 2);
+    (1, '商品管理', 'icon-bag', '/view/backend/goods/list.html', 2, 2),
+    (1, '节点管理', 'icon-layers', '/view/backend/menu/list.html', 2, 3),
+    (1, '角色管理', 'icon-user-following', '/view/backend/role/list.html', 2, 4);
 
 -- -------------------------------------------------------------
 -- 6. 角色表 te_role（RBAC）
@@ -159,12 +161,12 @@ CREATE TABLE IF NOT EXISTS `te_role_menu` (
   COLLATE = utf8mb4_unicode_ci COMMENT ='角色-菜单关联表';
 
 -- RBAC 种子数据：
--- admin 角色拥有全部菜单（1/2/3）
--- user 角色仅拥有部分菜单（1/2），看不到"商品管理"
+-- admin 角色拥有全部菜单（1/2/3/4/5）
+-- user 角色仅拥有部分菜单（1/2），看不到"商品管理/节点管理/角色管理"
 INSERT INTO `te_role` (`name`, `title`) VALUES
     ('admin', '管理员'),
     ('user', '普通用户');
 
 INSERT INTO `te_role_menu` (`role_id`, `menu_id`) VALUES
-    (1, 1), (1, 2), (1, 3),   -- admin：全部菜单
-    (2, 1), (2, 2);            -- user：控制面板 + 用户管理
+    (1, 1), (1, 2), (1, 3), (1, 4), (1, 5),  -- admin：全部菜单
+    (2, 1), (2, 2);                            -- user：控制面板 + 用户管理

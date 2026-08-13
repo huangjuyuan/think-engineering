@@ -39,6 +39,20 @@ class MenuModel
     }
 
     /**
+     * 获取全部菜单节点（含禁用状态，未组装成树，管理页展示用）
+     *
+     * @return array 菜单节点数组
+     */
+    public function getAllList(): array
+    {
+        return $this->db()->fetchAll(
+            "SELECT id, pid, title, icon, url, type, sort, status, created_at, updated_at
+             FROM te_menu
+             ORDER BY pid ASC, sort ASC, id ASC"
+        );
+    }
+
+    /**
      * 获取菜单树（多级结构，子节点挂到父节点的 children 下）
      *
      * @param array|null $allowedIds 允许的菜单 ID 数组；null 表示不限制（返回全部）

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>编辑角色 - TinyPHP Admin</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon.png">
+    <!-- Custom Stylesheet -->
+    <link href="../css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div id="main-wrapper">
+
+        <!-- 公共 Header（由 js/common.js 加载） -->
+        <div id="app-header"></div>
+
+        <!-- 公共 Sidebar（由 js/common.js 加载） -->
+        <div id="app-sidebar"></div>
+
+        <!-- Content body start -->
+        <div class="content-body">
+
+            <div class="row page-titles mx-0">
+                <div class="col p-md-0">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="list.html">角色管理</a></li>
+                        <li class="breadcrumb-item active" id="pageActiveTitle">新增角色</li>
+                    </ol>
+                </div>
+            </div>
+            <!-- row -->
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title m-3" id="formTitle">新增角色</h4>
+                                <form id="roleForm" class="basic-form">
+                                    <input type="hidden" id="roleId" name="id">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="roleName">角色标识 <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="roleName" name="name" placeholder="如 admin / user">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="roleTitle">角色名称 <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="roleTitle" name="title" placeholder="如 管理员">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="roleStatus">状态</label>
+                                                <select class="form-control" id="roleStatus" name="status">
+                                                    <option value="1" selected>启用</option>
+                                                    <option value="0">禁用</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 菜单权限树形勾选 -->
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <label>菜单权限（勾选该角色可访问的菜单节点）</label>
+                                            <div class="border rounded p-3" id="menuPermTree" style="max-height:400px;overflow:auto;">
+                                                <!-- 动态渲染的菜单权限树 -->
+                                                <span class="text-muted">加载中...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <button type="button" class="btn btn-primary px-5" onclick="saveRole()"><i class="icon-check"></i> 保存</button>
+                                        <a href="list.html" class="btn btn-secondary px-4 ml-2">取消</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- #/ container -->
+        </div>
+        <!-- Content body end -->
+
+        <!-- 公共 Footer（由 js/common.js 加载） -->
+        <div id="app-footer"></div>
+
+    </div>
+    <!-- Main wrapper end -->
+
+    <!-- 操作结果提示 Modal -->
+    <div class="modal fade" id="msgModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div id="msgModalBody" class="mb-3"></div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../plugins/common/common.min.js"></script>
+    <script src="../js/custom.min.js"></script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/gleek.js"></script>
+    <script src="../js/styleSwitcher.js"></script>
+
+    <!-- 公共组件加载逻辑（引入公共 JS，必须在 common.min.js 之后） -->
+    <script src="../js/common.js"></script>
+
+    <!-- 角色编辑逻辑 -->
+    <script>
+        // 通用提示弹窗
+        function showMsg(title, message, type) {
+            type = type || 'info';
+            var icon = {
+                success: '<i class="fa fa-check-circle text-success" style="font-size:40px"></i>',
+                error: '<i class="fa fa-times-circle text-danger" style="font-size:40px"></i>',
+                warning: '<i class="fa fa-exclamation-triangle text-warning" style="font-size:40px"></i>',
+                info: '<i class="fa fa-info-circle text-info" style="font-size:40px"></i>'
+            };
+            $('#msgModalBody').html((icon[type] || icon.info) + '<p class="m-t-15 m-b-0">' + message + '</p>');
+            $('#msgModal').modal('show');
+        }
+
+        // 已分配的菜单 ID 集合
+        var checkedMenuIds = {};
+
+        // 平铺菜单转树
+        function buildTree(list) {
+            var nodes = {};
+            list.forEach(function (n) { n.children = []; nodes[n.id] = n; });
+            var roots = [];
+            list.forEach(function (n) {
+                if (n.pid > 0 && nodes[n.pid]) nodes[n.pid].children.push(n);
+                else roots.push(n);
+            });
+            return roots;
+        }
+
+        // 递归渲染菜单权限树（复选框，缩进层级）
+        function renderPermTree(nodes, depth, html) {
+            nodes.forEach(function (n) {
+                var indent = depth > 0 ? '&nbsp;&nbsp;'.repeat(depth * 3) : '';
+                var checked = checkedMenuIds[n.id] ? 'checked' : '';
+                html.push(
+                    '<div class="form-check" style="margin-bottom:4px;">' +
+                    '<label class="form-check-label">' +
+                    '<input type="checkbox" class="form-check-input menu-perm-check" data-id="' + n.id + '" ' + checked + '>' +
+                    indent + (n.icon ? '<i class="' + n.icon + '"></i> ' : '') + (n.title || '') +
+                    '</label></div>'
+                );
+                if (n.children && n.children.length > 0) {
+                    renderPermTree(n.children, depth + 1, html);
+                }
+            });
+        }
+
+        // 加载菜单权限树
+        function loadMenuPerms() {
+            $.get('/backend/menu/all', function (res) {
+                if (res.code === 0 && res.data && res.data.list) {
+                    var roots = buildTree(res.data.list);
+                    var html = [];
+                    renderPermTree(roots, 0, html);
+                    $('#menuPermTree').html(html.length ? html.join('') : '<span class="text-muted">暂无菜单节点</span>');
+                } else {
+                    $('#menuPermTree').html('<span class="text-muted">加载菜单失败</span>');
+                }
+            }, 'json').fail(function () {
+                $('#menuPermTree').html('<span class="text-muted">加载菜单失败</span>');
+            });
+        }
+
+        // 收集所有勾选的菜单 ID（逗号分隔字符串）
+        function collectCheckedMenuIds() {
+            var ids = [];
+            $('.menu-perm-check:checked').each(function () {
+                ids.push($(this).data('id'));
+            });
+            return ids.join(',');
+        }
+
+        // 页面加载时
+        $(function () {
+            var id = new URLSearchParams(window.location.search).get('id') || '';
+            $('#roleId').val(id);
+
+            // 先加载菜单权限树
+            loadMenuPerms();
+
+            if (id) {
+                // 编辑模式：加载角色数据 + 已分配菜单
+                $('#pageActiveTitle').text('编辑角色');
+                $('#formTitle').text('编辑角色');
+                $.get('/backend/role/get', { id: id }, function (res) {
+                    if (res.code === 0) {
+                        var d = res.data;
+                        $('#roleName').val(d.name);
+                        $('#roleTitle').val(d.title);
+                        $('#roleStatus').val(d.status || 1);
+                        // 回填已分配的菜单权限
+                        if (d.menu_ids && d.menu_ids.length) {
+                            d.menu_ids.forEach(function (mid) { checkedMenuIds[mid] = true; });
+                        }
+                        // 重新渲染权限树（带勾选）
+                        var roots = [];
+                        $.get('/backend/menu/all', function (res2) {
+                            if (res2.code === 0 && res2.data && res2.data.list) {
+                                roots = buildTree(res2.data.list);
+                                var html = [];
+                                renderPermTree(roots, 0, html);
+                                $('#menuPermTree').html(html.join(''));
+                            }
+                        });
+                    } else {
+                        showMsg('提示', res.msg || '加载角色数据失败', 'error');
+                    }
+                }, 'json').fail(function () {
+                    showMsg('提示', '请求失败，请检查 API 地址', 'error');
+                });
+            }
+        });
+
+        // 保存角色（含菜单权限）
+        function saveRole() {
+            var name = $('#roleName').val().trim();
+            var title = $('#roleTitle').val().trim();
+            if (!name || !title) {
+                showMsg('提示', '角色标识和角色名称不能为空', 'warning');
+                return;
+            }
+
+            var formData = {
+                id: $('#roleId').val(),
+                name: name,
+                title: title,
+                status: $('#roleStatus').val(),
+                menu_ids: collectCheckedMenuIds()
+            };
+
+            $.post('/backend/role/save', formData, function (res) {
+                if (res.code === 0) {
+                    showMsg('操作成功', res.msg, 'success');
+                    setTimeout(function () { location.href = 'list.html'; }, 1000);
+                } else {
+                    showMsg('提示', res.msg || '保存失败', 'error');
+                }
+            }, 'json').fail(function () {
+                showMsg('提示', '请求失败，请检查 API 地址', 'error');
+            });
+        }
+    </script>
+
+</body>
+
+</html>
