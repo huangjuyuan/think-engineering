@@ -226,7 +226,7 @@
                     $('#goodsStatus').val(data.status);
                     $('#description').val(data.description || '');
                     if (data.img_url) {
-                        $('#previewImg').attr('src', data.img_url.indexOf('http') === 0 ? data.img_url : '../' + data.img_url);
+                        $('#previewImg').attr('src', data.img_url.indexOf('http') === 0 ? data.img_url : '/' + data.img_url);
                     }
                     // 回填标签
                     $.each(data.tags || [], function (i, tag) {
@@ -252,35 +252,45 @@
         }
         var id = $('#goodsId').val();
         var tags = $('#goodsTags').tagsinput('items');
-        var fileInput = $('#goodsImage')[0].files[0];
 
-        var formData = {
-            id: id,
-            name: name,
-            category: $('#category').val(),
-            price: price,
-            stock: stock,
-            status: $('#goodsStatus').val(),
-            tags: tags.join(','),        // 标签数组转逗号分隔字符串
-            description: $('#description').val()
-        };
+        // 使用 FormData 提交，支持文件上传（multipart/form-data）
+        var formData = new FormData();
+        formData.append('id', id);
+        formData.append('name', name);
+        formData.append('category', $('#category').val());
+        formData.append('price', price);
+        formData.append('stock', stock);
+        formData.append('status', $('#goodsStatus').val());
+        formData.append('tags', tags.join(','));      // 标签数组转逗号分隔字符串
+        formData.append('description', $('#description').val());
+        // 追加图片文件（若选择了新图片）
+        var fileInput = $('#goodsImage')[0].files[0];
         if (fileInput) {
-            formData.img_url = 'images/avatar/' + fileInput.name;  // 假 API 演示：图片名映射
+            formData.append('image', fileInput);
         }
 
-        // AJAX 提交（假 API 演示，通过框架路由 /backend/goods/save）
-        $.post('/backend/goods/save', formData, function (res) {
-            if (res.code === 0) {
-                showMsg('操作成功', res.msg, 'success');
-                // 保存成功后延迟 1 秒跳转回商品列表页
-                setTimeout(function () {
-                    location.href = 'list.html';
-                }, 1000);
-            } else {
-                showMsg('提示', res.msg || '保存失败', 'error');
+        // AJAX 提交（通过框架路由 /backend/goods/save，multipart 上传）
+        $.ajax({
+            url: '/backend/goods/save',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function (res) {
+                if (res.code === 0) {
+                    showMsg('操作成功', res.msg, 'success');
+                    // 保存成功后延迟 1 秒跳转回商品列表页
+                    setTimeout(function () {
+                        location.href = 'list.html';
+                    }, 1000);
+                } else {
+                    showMsg('提示', res.msg || '保存失败', 'error');
+                }
+            },
+            error: function () {
+                showMsg('提示', '请求失败，请检查 API 地址', 'error');
             }
-        }, 'json').fail(function () {
-            showMsg('提示', '请求失败，请检查 API 地址', 'error');
         });
     }
 </script>
