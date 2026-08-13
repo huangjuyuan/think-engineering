@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THINK・ENGINEERING シンクエンジニアリング株式会社</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Meiryo", "メイリオ", sans-serif;
+        }
+        body {
+            background-color: #f8fafc;
+        }
+        /* 顶部提示栏 */
+        .top-notice-bar {
+            background: #1a2942;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .top-notice-left {
+            display: flex;
+            gap: 8px;
+        }
+        .top-notice-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .tel-text {
+            color: #fff;
+        }
+        .demo-tag {
+            background: #334155;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+        /* 头部导航栏 */
+        header {
+            background: #ffffff;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-wrap h1 {
+            font-size: 32px;
+            color: #1a2942;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .logo-wrap p {
+            font-size: 14px;
+            color: #475569;
+        }
+        .nav-main {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+        .nav-main a {
+            text-decoration: none;
+            color: #1a2942;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .contact-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        /* 主视觉区域 */
+        .hero-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 40px 24px;
+            background-image: linear-gradient(to right, #f0f7ff, #eef6ff);
+            background-size: cover;
+            background-position: center;
+        }
+        .tag-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        .tag-item {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 14px;
+            color: #334155;
+        }
+        .hero-text h2 {
+            font-size: 48px;
+            line-height: 1.4;
+            color: #1a2942;
+            margin-bottom: 24px;
+        }
+        .hero-text h2 span {
+            color: #2563eb;
+        }
+        .hero-text p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #334155;
+            max-width: 620px;
+        }
+        .hero-drawing-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            border-radius: 6px;
+        }
+        .drawing-head {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+        .drawing-area {
+            position: relative;
+            height: 320px;
+            background: #f8fafc;
+            background-image: linear-gradient(#e2e8f0 1px, transparent 1px),
+                            linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .motor-model {
+            width: 70%;
+            height: 120px;
+            background: #cbd5e1;
+            border-radius: 8px;
+            position: relative;
+        }
+        .shaft-tag {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background: #2563eb;
+            color: white;
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        .spec-panel {
+            position: absolute;
+            right: 10px;
+            top: 20px;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+        }
+        .spec-panel h4 {
+            color: #2563eb;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin: 4px 0;
+            gap: 20px;
+        }
+
+        /* ========== 商品列表区域 新增 ========== */
+        .product-wrap {
+            max-width: 1400px;
+            margin: 60px auto;
+            padding: 0 24px;
+        }
+        .product-title {
+            font-size: 28px;
+            color: #1a2942;
+            margin-bottom: 30px;
+            border-left: 5px solid #2563eb;
+            padding-left: 12px;
+        }
+        /* 商品容器 5列布局 */
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        /* 商品卡片 */
+        .product-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .product-img-box {
+            height: 180px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .product-img-box img {
+            max-width: 80%;
+            max-height: 80%;
+        }
+        .product-text {
+            padding: 16px;
+        }
+        .product-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a2942;
+            margin-bottom: 8px;
+        }
+        .product-desc {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+        /* 分页按钮区域 */
+        .pagination-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .page-btn:disabled {
+            background: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        .page-num {
+            padding: 8px 14px;
+        }
+        .page-num.active {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部资讯栏 -->
+    <div class="top-notice-bar">
+        <div class="top-notice-left">
+            <span>小型ギヤードモータ専門メーカー｜歯車技術 × DCモータ技術</span>
+        </div>
+        <div class="top-notice-right">
+            <span>技術・お見積りのお問い合わせ：<span class="tel-text">03-XXXX-XXXX</span></span>
+            <span class="demo-tag">RENEWAL DEMO</span>
+        </div>
+    </div>
+
+    <!-- 头部导航 -->
+    <header>
+        <div class="logo-wrap">
+            <h1>THINK・ENGINEERING</h1>
+            <p>シンクエンジニアリング株式会社</p>
+        </div>
+        <div class="nav-main">
+            <a href="#">製品情報</a>
+            <a href="#">製品検索</a>
+            <a href="#">技術情報</a>
+            <a href="#">会社情報</a>
+            <a href="#">お問い合わせ</a>
+            <button class="contact-btn">お問い合わせ</button>
+        </div>
+    </header>
+
+    <!-- 主视觉区域 -->
+    <section class="hero-section">
+        <div class="hero-text">
+            <div class="tag-group">
+                <span class="tag-item">ø13–ø35 小型ギヤードモータ</span>
+                <span class="tag-item">DCブラシ／ブラシレス</span>
+                <span class="tag-item">カスタム・特殊仕様対応</span>
+            </div>
+            <h2>
+                小型ギヤードモータの開発・製造で、<br>
+                <span>精密機器の駆動を支える。</span>
+            </h2>
+            <p>
+                歯車技術とDCモータ技術を組み合わせ、用途・仕様に合わせた最適な製品選定をサポート。小型化・高トルク・低速・低騒音・長寿命のご要望に、設計段階からお応えします。
+            </p>
+        </div>
+        <div class="hero-drawing-card">
+            <div class="drawing-head">
+                <span>TE-22BK SERIES / OUTLINE DRAWING</span>
+                <span>SCALE 1:1.4 &nbsp; UNIT : mm</span>
+            </div>
+            <div class="drawing-area">
+                <div class="motor-model">
+                    <span class="shaft-tag">出力軸 ø3</span>
+                </div>
+                <div class="spec-panel">
+                    <h4>REPRESENTATIVE SPEC</h4>
+                    <div class="spec-row">
+                        <span>モータ種類</span>
+                        <span>BLDC</span>
+                    </div>
+                    <div class="spec-row">
+                        <span>定格電圧</span>
+                        <span>24 V</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 商品展示区域（新增） ========== -->
+    <section class="product-wrap">
+        <h3 class="product-title">製品一覧</h3>
+        <div class="product-list" id="productListBox"></div>
+        <!-- 分页容器 -->
+        <div class="pagination-box" id="paginationBox"></div>
+    </section>
+
+<script>
+// 商品数据源：从后端接口 /frontend/goods/list 获取（数据库 te_goods 表）
+let allProductData = [];
+
+// 分页配置：5列5行 = 一页25个商品
+const pageSize = 25;
+let currentPage = 1;
+let totalPage = 1;
+
+// 从接口加载商品数据
+function loadProducts(){
+    $.get('/frontend/goods/list', { page: 1, page_size: 100 }, function(res){
+        if (res.code === 0){
+            allProductData = res.data.list || [];
+            totalPage = Math.ceil(allProductData.length / pageSize);
+            renderProduct();
+        } else {
+            $("#productListBox").html('<p style="padding:20px;color:#94a3b8;">商品データの取得に失敗しました</p>');
+        }
+    }, 'json').fail(function(){
+        $("#productListBox").html('<p style="padding:20px;color:#94a3b8;">商品データの取得に失敗しました</p>');
+    });
+}
+
+// 渲染当前页商品
+function renderProduct(){
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const pageData = allProductData.slice(start, end);
+    let html = "";
+    $.each(pageData, function(i, item){
+        html += `
+            <div class="product-card">
+                <div class="product-img-box">
+                    <img src="${item.img}" alt="${item.name}">
+                </div>
+                <div class="product-text">
+                    <h4 class="product-name">${item.name}</h4>
+                    <p class="product-desc">${item.desc}</p>
+                </div>
+            </div>
+        `;
+    });
+    $("#productListBox").html(html);
+    renderPagination();
+}
+
+// 渲染分页按钮
+function renderPagination(){
+    let pageHtml = "";
+    // 上一页
+    pageHtml += `<button class="page-btn prev-btn" ${currentPage === 1 ? "disabled" : ""}>前へ</button>`;
+    // 页码
+    for(let i=1; i<=totalPage; i++){
+        pageHtml += `<button class="page-btn page-num ${i === currentPage ? "active" : ""}" data-page="${i}">${i}</button>`;
+    }
+    // 下一页
+    pageHtml += `<button class="page-btn next-btn" ${currentPage === totalPage ? "disabled" : ""}>次へ</button>`;
+    $("#paginationBox").html(pageHtml);
+}
+
+// 分页点击事件绑定
+$(document).on("click", ".prev-btn", function(){
+    if(currentPage > 1){
+        currentPage--;
+        renderProduct();
+    }
+});
+$(document).on("click", ".next-btn", function(){
+    if(currentPage < totalPage){
+        currentPage++;
+        renderProduct();
+    }
+});
+$(document).on("click", ".page-num", function(){
+    const targetPage = parseInt($(this).data("page"));
+    currentPage = targetPage;
+    renderProduct();
+});
+
+// 页面加载完成初始化：从接口加载商品数据
+$(function(){
+    loadProducts();
+});
+</script>
+</body>
+</html>

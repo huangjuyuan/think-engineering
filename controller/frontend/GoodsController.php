@@ -1,0 +1,70 @@
+<?php
+
+namespace controller\frontend;
+
+use model\GoodsModel;
+use utils\Response;
+
+/**
+ * 前端商品控制器
+ *
+ * 为前端展示页面提供商品数据接口：
+ *   GET /frontend/goods/list  -> 商品列表（分页）
+ */
+class GoodsController
+{
+    /**
+     * 商品模型
+     */
+    private $model;
+
+    public function __construct()
+    {
+        $this->model = new GoodsModel();
+    }
+
+    /**
+     * 商品列表（前端展示用）
+     * GET /frontend/goods/list
+     * 参数：page, page_size（默认每页 25，5x5 布局）
+     */
+    public function list()
+    {
+        try {
+            $page     = max(1, intval($_GET['page'] ?? 1));
+            $pageSize = max(1, min(100, intval($_GET['page_size'] ?? 25)));
+
+            $result = $this->model->getGoodsList($page, $pageSize, 'id ASC', '');
+
+            // 只返回前端需要的字段
+            $list = array_map(function ($g) {
+                return [
+                    'id'          => $g['id'],
+                    'name'        => $g['name'],
+                    'desc'        => $g['description'] ?? '',
+                    'img'         => $this->imgUrl($g['img_url'] ?? ''),
+                    'price'       => (float) $g['price'],
+                    'stock'       => (int) $g['stock'],
+                ];
+            }, $result['list']);
+
+            Response::json([
+                'total' => $result['total'],
+                'list'  => $list,
+            ]);
+        } catch (\Throwable $e) {
+            Response::json(null, 1, $e->getMessage());
+        }
+    }
+
+    /**
+     * 生成图片 URL（空则用占位图）
+     */
+    private function imgUrl(string $img): string
+    {
+        if ($img !== '') {
+            return $img;
+        }
+        return 'https://via.placeholder.com/120x120/c9d8e8/223344?text=MOTOR';
+    }
+}

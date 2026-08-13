@@ -20,9 +20,9 @@ class Router
 
     /**
      * 二级目录前缀（作为模块名，映射到 controller/{dir} 命名空间）
-     * 例如 backend -> controller\backend\*
+     * 例如 backend -> controller\backend\*，frontend -> controller\frontend\*
      */
-    private static $modules = ['backend'];
+    private static $modules = ['backend', 'frontend'];
 
     /**
      * 分发请求

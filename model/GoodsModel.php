@@ -48,10 +48,11 @@ class GoodsModel
 
         // 排序字段白名单，防止注入
         $allowed = [
-            'id DESC', 'id ASC', 'name ASC', 'name DESC',
-            'price ASC', 'price DESC', 'stock ASC', 'stock DESC',
+            'id desc', 'id asc', 'name asc', 'name desc',
+            'price asc', 'price desc', 'stock asc', 'stock desc',
         ];
-        $orderSql = in_array(strtolower($order), $allowed, true) ? $order : 'id DESC';
+        $orderLower = strtolower($order);
+        $orderSql = in_array($orderLower, $allowed, true) ? $orderLower : 'id desc';
 
         $where = [];
         $bind = [];
