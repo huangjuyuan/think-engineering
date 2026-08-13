@@ -24,55 +24,5 @@ $(function () {
             height: "100%",
             color: "transparent"
         });
-
-        // ======= 登录逻辑（请求假接口 /backend/user/login） =======
-        window.__sidebarLoginReady = true;
-
-        // 登录提交
-        window.doLogin = function () {
-            var username = $('#loginUsername').val();
-            var password = $('#loginPassword').val();
-            if (!username || !password) {
-                $('#loginMsg').text('用户名和密码不能为空');
-                return;
-            }
-            $('#loginMsg').text('');
-            $.post('/backend/user/login', { username: username, password: password }, function (res) {
-                if (res.code === 0) {
-                    // 登录成功：写入本地标记并刷新状态
-                    localStorage.setItem('loginUser', res.data.user.nickname || res.data.user.username);
-                    localStorage.setItem('loginToken', res.data.token);
-                    $('#loginModal').modal('hide');
-                    renderLoginState();
-                } else {
-                    $('#loginMsg').text(res.msg || '登录失败');
-                }
-            }, 'json').fail(function () {
-                $('#loginMsg').text('请求失败，请检查接口地址');
-            });
-        };
-
-        // 刷新登录状态显示
-        function renderLoginState() {
-            var user = localStorage.getItem('loginUser');
-            if (user) {
-                $('#loginUser').text(user);
-                $('#btnLogin').html('<i class="icon-logout"></i> 退出').attr('onclick', 'logout()');
-            } else {
-                $('#loginUser').text('未登录');
-                $('#btnLogin').html('<i class="icon-key"></i> 登录').attr('onclick', 'openLoginModal()');
-            }
-        }
-        window.renderLoginState = renderLoginState;
-
-        // 退出登录
-        window.logout = function () {
-            localStorage.removeItem('loginUser');
-            localStorage.removeItem('loginToken');
-            renderLoginState();
-        };
-
-        // 初始渲染登录状态
-        renderLoginState();
     });
 });

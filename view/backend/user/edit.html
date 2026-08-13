@@ -33,9 +33,6 @@
                         <li class="breadcrumb-item active" id="pageActiveTitle">编辑用户</li>
                     </ol>
                 </div>
-                <div class="col p-md-0 text-right">
-                    <a href="list.html" class="btn btn-secondary"><i class="icon-arrow-left"></i> 返回列表</a>
-                </div>
             </div>
             <!-- row -->
 
@@ -64,10 +61,8 @@
                     <!-- 右侧：编辑表单 -->
                     <div class="col-lg-8 col-xl-9">
                         <div class="card">
-                            <div class="card-header">
-                                <h4 class="card-title m-0">用户信息编辑</h4>
-                            </div>
                             <div class="card-body">
+                                <h4 class="card-title m-0">用户信息编辑</h4>
                                 <form id="userForm" enctype="multipart/form-data" class="basic-form">
                                     <input type="hidden" id="userId" name="id">
                                     <div class="row">
@@ -247,6 +242,7 @@
                 username: username,
                 nickname: nickname,
                 email: $('#email').val(),
+                password: $('#password').val(),
                 role: $('#role').val(),
                 status: $('#status').val(),
                 remark: $('#remark').val()
@@ -256,6 +252,10 @@
             $.post('/backend/user/save', formData, function (res) {
                 if (res.code === 0) {
                     showMsg('操作成功', res.msg, 'success');
+                    // 保存成功后延迟 1 秒跳转回用户列表页
+                    setTimeout(function () {
+                        location.href = 'list.html';
+                    }, 1000);
                 } else {
                     showMsg('提示', res.msg || '保存失败', 'error');
                 }

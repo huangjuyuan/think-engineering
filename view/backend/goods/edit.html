@@ -16,16 +16,16 @@
 
 <body>
 
-<div id="main-wrapper">
+    <div id="main-wrapper">
 
-    <!-- 公共 Header（由 js/common.js 加载） -->
-    <div id="app-header"></div>
+        <!-- 公共 Header（由 js/common.js 加载） -->
+        <div id="app-header"></div>
 
-    <!-- 公共 Sidebar（由 js/common.js 加载） -->
-    <div id="app-sidebar"></div>
+        <!-- 公共 Sidebar（由 js/common.js 加载） -->
+        <div id="app-sidebar"></div>
 
-    <!-- Content body start -->
-    <div class="content-body">
+        <!-- Content body start -->
+        <div class="content-body">
 
             <div class="row page-titles mx-0">
                 <div class="col p-md-0">
@@ -35,7 +35,7 @@
                     </ol>
                 </div>
             </div>
-        <!-- row -->
+            <!-- row -->
 
         <div class="container-fluid">
             <div class="row">
@@ -60,10 +60,7 @@
                 <div class="col-lg-8 col-xl-9">
                     <div class="card">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4 class="card-title m-0">商品信息编辑</h4>
-                                <a href="list.html" class="btn btn-secondary"><i class="icon-arrow-left"></i> 返回列表</a>
-                            </div>
+                            <h4 class="card-title m-0">商品信息编辑</h4>
                             <form id="goodsForm" enctype="multipart/form-data" class="basic-form">
                                 <input type="hidden" id="goodsId" name="id">
                                 <div class="row">
@@ -122,11 +119,9 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-12">
-                                        <div class="form-group">
-                                            <label>商品描述</label>
-                                            <textarea class="form-control h-100px" id="description" rows="4"
-                                                      placeholder="商品详细描述"></textarea>
-                                        </div>
+                                        <label>商品描述</label>
+                                        <textarea class="form-control h-100px" id="description" rows="3"
+                                                  placeholder="商品详细描述"></textarea>
                                     </div>
                                 </div>
                                 <div class="mt-4">
@@ -140,30 +135,30 @@
                     </div>
                 </div>
             </div>
+            <!-- #/ container -->
         </div>
-        <!-- #/ container -->
+        </div>
+        <!-- Content body end -->
+
+        <!-- 公共 Footer（由 js/common.js 加载） -->
+        <div id="app-footer"></div>
+
     </div>
-    <!-- Content body end -->
+    <!-- Main wrapper end -->
 
-    <!-- 公共 Footer（由 js/common.js 加载） -->
-    <div id="app-footer"></div>
-
-</div>
-<!-- Main wrapper end -->
-
-<!-- 操作结果提示 Modal -->
-<div class="modal fade" id="msgModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-body text-center p-4">
-                <div id="msgModalBody" class="mb-3"></div>
-            </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+    <!-- 操作结果提示 Modal -->
+    <div class="modal fade" id="msgModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div id="msgModalBody" class="mb-3"></div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 <!-- Scripts -->
 <script src="../plugins/common/common.min.js"></script>
@@ -277,6 +272,10 @@
         $.post('/backend/goods/save', formData, function (res) {
             if (res.code === 0) {
                 showMsg('操作成功', res.msg, 'success');
+                // 保存成功后延迟 1 秒跳转回商品列表页
+                setTimeout(function () {
+                    location.href = 'list.html';
+                }, 1000);
             } else {
                 showMsg('提示', res.msg || '保存失败', 'error');
             }
