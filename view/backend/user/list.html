@@ -50,7 +50,7 @@
                                 </a>
                             </div>
                             <div class="table-responsive">
-                                <table class="table table-striped table-bordered zero-configuration" id="userTable">
+                                <table class="table table-striped table-bordered" id="userTable">
                                     <thead>
                                     <tr>
                                         <th>ID</th>
@@ -174,6 +174,9 @@
 
     // ======= AJAX 数据加载 =======
 
+    // DataTables 实例（在页面加载时初始化）
+    var userTable = null;
+
     // 加载用户列表（通过框架路由 /backend/user/list）
     function loadUsers() {
         $.get('/backend/user/list', function (res) {
@@ -181,38 +184,67 @@
                 showMsg('提示', res.msg || '加载用户列表失败', 'error');
                 return;
             }
-            var $tbody = $('#userTbody');
-            $tbody.empty();
-            $.each(res.data, function (i, u) {
-                // 状态徽章
-                var statusHtml = u.status == 1
-                    ? '<span class="badge badge-success">正常</span>'
-                    : '<span class="badge badge-warning">禁用</span>';
-                // 角色徽章
-                var roleHtml = u.role === 'admin'
-                    ? '<span class="badge gradient-1 badge-primary">管理员</span>'
-                    : '<span class="badge badge-info">普通用户</span>';
-                // 头像路径（假 API 返回相对路径）
-                var avatar = (u.avatar || 'images/avatar/avatar-media.png').indexOf('http') === 0
-                    ? u.avatar : '../' + (u.avatar || 'images/avatar/avatar-media.png');
+            var list = res.data && res.data.list ? res.data.list : [];
 
-                $tbody.append(
-                    '<tr>' +
-                    '<td>' + u.id + '</td>' +
-                    '<td><img src="' + avatar + '" class="rounded-circle" width="40" height="40" alt=""></td>' +
-                    '<td>' + u.username + '</td>' +
-                    '<td>' + u.nickname + '</td>' +
-                    '<td>' + roleHtml + '</td>' +
-                    '<td>' + (u.email || '') + '</td>' +
-                    '<td>' + statusHtml + '</td>' +
-                    '<td>' + (u.created_at || '') + '</td>' +
-                    '<td>' +
-                    '<button class="btn btn-sm btn-primary" onclick="location.href=\'edit.html?id=' + u.id + '\'"><i class="icon-pencil"></i></button> ' +
-                    '<button class="btn btn-sm btn-danger" onclick="deleteUser(' + u.id + ')"><i class="icon-trash"></i></button>' +
-                    '</td>' +
-                    '</tr>'
-                );
-            });
+            if (userTable === null) {
+                // 首次初始化 DataTables
+                userTable = $('#userTable').DataTable({
+                    data: list,
+                    columns: [
+                        { data: 'id' },
+                        {
+                            data: null,
+                            render: function (data) {
+                                var avatar = (data.avatar || 'images/avatar/avatar-media.png');
+                                var src = avatar.indexOf('http') === 0 ? avatar : '../' + avatar;
+                                return '<img src="' + src + '" class="rounded-circle" width="40" height="40" alt="">';
+                            }
+                        },
+                        { data: 'username' },
+                        { data: 'nickname' },
+                        {
+                            data: 'role',
+                            render: function (data) {
+                                return data === 'admin'
+                                    ? '<span class="badge gradient-1 badge-primary">管理员</span>'
+                                    : '<span class="badge badge-info">普通用户</span>';
+                            }
+                        },
+                        { data: 'email', defaultContent: '' },
+                        {
+                            data: 'status',
+                            render: function (data) {
+                                return data == 1
+                                    ? '<span class="badge badge-success">正常</span>'
+                                    : '<span class="badge badge-warning">禁用</span>';
+                            }
+                        },
+                        { data: 'created_at', defaultContent: '' },
+                        {
+                            data: 'id',
+                            render: function (data) {
+                                return '<button class="btn btn-sm btn-primary" onclick="location.href=\'edit.html?id=' + data + '\'"><i class="icon-pencil"></i></button> ' +
+                                    '<button class="btn btn-sm btn-danger" onclick="deleteUser(' + data + ')"><i class="icon-trash"></i></button>';
+                            }
+                        }
+                    ],
+                    order: [[0, 'desc']],
+                    columnDefs: [
+                        { targets: [1, 8], orderable: false }   // 头像列、操作列不排序
+                    ],
+                    language: {
+                        search: '搜索:',
+                        lengthMenu: '每页 _MENU_ 条',
+                        info: '显示 _START_ 至 _END_ 共 _TOTAL_ 条',
+                        paginate: { previous: '上一页', next: '下一页' }
+                    }
+                });
+            } else {
+                // 已有实例，用 clear().rows.add().draw() 刷新数据
+                userTable.clear();
+                userTable.rows.add(list);
+                userTable.draw();
+            }
         }, 'json').fail(function () {
             showMsg('提示', '请求失败，请检查 API 地址', 'error');
         });
