@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `te_user` (
     `nickname`    VARCHAR(64)      NOT NULL DEFAULT ''     COMMENT '昵称',
     `role`        VARCHAR(32)      NOT NULL DEFAULT 'user' COMMENT '角色：admin/user',
     `status`      TINYINT UNSIGNED NOT NULL DEFAULT 1      COMMENT '状态：1启用 0禁用',
+    `avatar`      VARCHAR(255)     DEFAULT NULL            COMMENT '头像地址',
     `last_login`  DATETIME         DEFAULT NULL            COMMENT '最后登录时间',
     `created_at`  DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at`  DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

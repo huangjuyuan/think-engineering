@@ -4,6 +4,7 @@ namespace controller\backend;
 
 use model\UserModel;
 use utils\Response;
+use utils\Upload;
 use utils\Validator;
 
 /**
@@ -108,6 +109,11 @@ class UserController
                 'status'   => intval($_POST['status'] ?? 1),
             ];
 
+            // 处理头像上传（若上传了新头像则写入 avatar）
+            if (isset($_FILES['avatar']) && is_array($_FILES['avatar']) && $_FILES['avatar']['error'] !== UPLOAD_ERR_NO_FILE) {
+                $data['avatar'] = Upload::image($_FILES['avatar'], 'view/backend/images/upload', 2 * 1024 * 1024);
+            }
+
             // 新增时必须设置密码；编辑时密码可选（留空则不修改）
             $rules = [
                 'username' => 'required|alpha_dash|min:3|max:64',
@@ -127,12 +133,16 @@ class UserController
             }
 
             if ($id > 0) {
-                $this->model->updateUser($id, [
+                $update = [
                     'nickname' => $data['nickname'],
                     'role'     => $data['role'],
                     'status'   => $data['status'],
                     'password' => $data['password'],
-                ]);
+                ];
+                if (isset($data['avatar'])) {
+                    $update['avatar'] = $data['avatar'];
+                }
+                $this->model->updateUser($id, $update);
                 Response::json(['id' => $id], 0, '更新成功');
             } else {
                 $newId = $this->model->addUser($data);

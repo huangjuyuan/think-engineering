@@ -62,7 +62,7 @@ class UserModel
         // 分页列表（不返回 password 哈希）
         $offset = ($page - 1) * $pageSize;
         $list = $db->fetchAll(
-            "SELECT id, username, nickname, role, status, last_login, created_at, updated_at
+            "SELECT id, username, nickname, role, status, avatar, last_login, created_at, updated_at
              FROM te_user $whereSql
              ORDER BY id DESC
              LIMIT $pageSize OFFSET $offset",
@@ -81,7 +81,7 @@ class UserModel
     public function getUserById(int $id): ?array
     {
         return $this->db()->fetch(
-            "SELECT id, username, nickname, role, status, last_login, created_at, updated_at
+            "SELECT id, username, nickname, role, status, avatar, last_login, created_at, updated_at
              FROM te_user WHERE id = ?",
             [$id]
         );
@@ -125,6 +125,7 @@ class UserModel
             'nickname' => $nickname,
             'role'     => $data['role'] ?? 'user',
             'status'   => (int) ($data['status'] ?? 1),
+            'avatar'   => $data['avatar'] ?? null,
         ]);
     }
 
@@ -149,6 +150,7 @@ class UserModel
         if (isset($data['role']))     $update['role']     = $data['role'];
         if (isset($data['status']))   $update['status']   = (int) $data['status'];
         if (isset($data['last_login'])) $update['last_login'] = $data['last_login'];
+        if (array_key_exists('avatar', $data)) $update['avatar'] = $data['avatar'];
         // 密码非空则重新哈希
         if (!empty($data['password'])) {
             $update['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
