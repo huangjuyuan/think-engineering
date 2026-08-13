@@ -43,14 +43,15 @@
                             <div class="card-body pt-5">
                                 <a class="text-center" href="index.html"> <h4>Rosella</h4></a>
         
-                                <form class="mt-5 mb-5 login-input">
+                                <form class="mt-5 mb-5 login-input" id="loginForm">
                                     <div class="form-group">
-                                        <input type="email" class="form-control" placeholder="Email">
+                                        <input type="text" class="form-control" id="loginUsername" name="username" placeholder="用户名" autocomplete="username">
                                     </div>
                                     <div class="form-group">
-                                        <input type="password" class="form-control" placeholder="Password">
+                                        <input type="password" class="form-control" id="loginPassword" name="password" placeholder="密码" autocomplete="current-password">
                                     </div>
-                                    <button class="btn login-form__btn submit w-100">Sign In</button>
+                                    <div id="loginMsg" class="text-danger mb-2" style="min-height:20px;"></div>
+                                    <button type="button" class="btn login-form__btn submit w-100" id="loginBtn" onclick="doLogin()">登 录</button>
                                 </form>
                                 <p class="mt-5 login-form__footer">还没有账号？<a href="register.html" class="text-primary">立即注册</a></p>
                             </div>
@@ -72,6 +73,47 @@
     <script src="../js/settings.js"></script>
     <script src="../js/gleek.js"></script>
     <script src="../js/styleSwitcher.js"></script>
+
+    <script>
+        // 登录提交：调用 /backend/user/login，成功后存 token/role 并跳转
+        function doLogin() {
+            var username = $('#loginUsername').val().trim();
+            var password = $('#loginPassword').val();
+            if (!username || !password) {
+                $('#loginMsg').text('请输入用户名和密码');
+                return;
+            }
+            $('#loginMsg').text('');
+            $('#loginBtn').prop('disabled', true).text('登录中...');
+
+            $.post('/backend/user/login', { username: username, password: password }, function (res) {
+                if (res.code === 0) {
+                    // 保存登录态（token + 角色，供侧边栏 RBAC 菜单接口使用）
+                    localStorage.setItem('loginToken', res.data.token);
+                    localStorage.setItem('loginRole', res.data.user.role || 'user');
+                    localStorage.setItem('loginUser', res.data.user.nickname || res.data.user.username);
+                    // 跳转到后台首页
+                    window.location.href = '/view/backend/goods/list.html';
+                } else {
+                    $('#loginBtn').prop('disabled', false).text('登 录');
+                    $('#loginMsg').text(res.msg || '登录失败');
+                }
+            }, 'json').fail(function () {
+                $('#loginBtn').prop('disabled', false).text('登 录');
+                $('#loginMsg').text('登录请求失败，请检查网络或接口');
+            });
+        }
+
+        // 回车提交
+        $(function () {
+            $('#loginPassword').on('keydown', function (e) {
+                if (e.key === 'Enter') { doLogin(); }
+            });
+            $('#loginUsername').on('keydown', function (e) {
+                if (e.key === 'Enter') { doLogin(); }
+            });
+        });
+    </script>
 </body>
 </html>
 

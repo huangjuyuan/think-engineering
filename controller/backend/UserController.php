@@ -180,8 +180,11 @@ class UserController
             $user = $result['user'];
             $this->model->updateLastLogin((int) $user['id']);
 
+            // 签发真正的 JWT（含 uid / username / role）
+            $token = \utils\Auth::issue($user);
+
             Response::json([
-                'token' => 'token-' . md5($username . time()),
+                'token' => $token,
                 'user'  => $user,
             ], 0, '登录成功');
         } catch (\Throwable $e) {
@@ -215,7 +218,18 @@ class UserController
             }
 
             $newId = $this->model->addUser($data);
-            Response::json(['id' => $newId], 0, '注册成功');
+
+            // 注册成功后直接签发 JWT，免二次登录
+            $token = \utils\Auth::issue([
+                'id'       => $newId,
+                'username' => $data['username'],
+                'role'     => 'user',
+            ]);
+
+            Response::json([
+                'token' => $token,
+                'user'  => ['id' => $newId, 'username' => $data['username'], 'nickname' => $data['nickname'], 'role' => 'user'],
+            ], 0, '注册成功');
         } catch (\Throwable $e) {
             Response::json(null, 1, $e->getMessage());
         }

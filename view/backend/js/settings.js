@@ -251,9 +251,10 @@ quixSettings.prototype.manageResponsiveSidebar = function() {
         body.attr("data-container", "wide");
     }
 
-    if(innerWidth > 767 && innerWidth < 1200) {
-        body.attr("data-sidebar-style", "mini");
-    }
+    // 方案A：去除 768~1199px 的 mini 折叠模式，保证侧边栏菜单文字始终显示
+    // if(innerWidth > 767 && innerWidth < 1200) {
+    //     body.attr("data-sidebar-style", "mini");
+    // }
 
     if(innerWidth < 768) {
         body.attr("data-sidebar-style", "overlay");

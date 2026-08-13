@@ -94,8 +94,12 @@
                 email: email
             }, function (res) {
                 if (res.code === 0) {
-                    $('#registerMsg').removeClass('text-danger').addClass('text-success').text(res.msg + '，正在跳转登录…');
-                    setTimeout(function () { location.href = 'login.html'; }, 1200);
+                    // 注册成功：保存登录态（token + 角色）并直接进入后台，无需再次登录
+                    localStorage.setItem('loginToken', res.data.token);
+                    localStorage.setItem('loginRole', res.data.user.role || 'user');
+                    localStorage.setItem('loginUser', res.data.user.nickname || res.data.user.username);
+                    $('#registerMsg').removeClass('text-danger').addClass('text-success').text(res.msg + '，正在进入后台…');
+                    setTimeout(function () { window.location.href = '/view/backend/goods/list.html'; }, 1200);
                 } else {
                     $('#registerMsg').text(res.msg || '注册失败');
                 }

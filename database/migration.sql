@@ -75,11 +75,35 @@ CREATE TABLE IF NOT EXISTS `te_tags` (
   COLLATE = utf8mb4_unicode_ci COMMENT ='商品标签表';
 
 -- -------------------------------------------------------------
--- 4. 种子数据
+-- 4. 侧边栏菜单节点表 te_menu
+--    对应后台侧边栏（view/backend/common/sidebar.html）动态渲染的菜单结构
+--    支持多级菜单：pid 关联父节点（0 为顶级）
+--    例：控制面板(顶级) -> 用户管理 / 商品管理（子节点）
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `te_menu` (
+    `id`         INT UNSIGNED     NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
+    `pid`        INT UNSIGNED     NOT NULL DEFAULT 0      COMMENT '父节点ID，0 为顶级目录',
+    `title`      VARCHAR(64)      NOT NULL                COMMENT '菜单名称',
+    `icon`       VARCHAR(64)      DEFAULT NULL            COMMENT '图标 class（如 icon-user）',
+    `url`        VARCHAR(255)     DEFAULT NULL            COMMENT '链接地址（子菜单项使用，顶级目录可为空）',
+    `type`       TINYINT UNSIGNED NOT NULL DEFAULT 1      COMMENT '类型：1目录(可展开) 2菜单(可点击链接)',
+    `sort`       INT UNSIGNED     NOT NULL DEFAULT 0      COMMENT '排序权重，越小越靠前',
+    `status`     TINYINT UNSIGNED NOT NULL DEFAULT 1      COMMENT '状态：1启用 0禁用',
+    `created_at` DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_pid` (`pid`),
+    KEY `idx_sort` (`sort`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='侧边栏菜单节点表';
+
+-- -------------------------------------------------------------
+-- 5. 种子数据
 --    te_user 密码为 password_hash('123456') 的结果，登录默认 admin/123456
 -- -------------------------------------------------------------
 INSERT INTO `te_user` (`username`, `password`, `nickname`, `role`) VALUES
-    ('admin', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHeFIrO2z0tVHm3mQz3d5sKxTq5g3n2y5e', '管理员', 'admin')
+    ('admin', '$2y$10$eWg7TJwijBgaGpJ414pv3emG43riItqMhs8nHF5RtUC0ZOlYILKSK', '管理员', 'admin')
 ON DUPLICATE KEY UPDATE `username` = VALUES(`username`);
 
 INSERT INTO `te_goods` (`name`, `price`, `stock`, `description`) VALUES
@@ -93,3 +117,54 @@ INSERT INTO `te_tags` (`gid`, `name`) VALUES
     (2, '特价'),
     (3, '进口品'),
     (3, '限定');
+
+-- 侧边栏菜单种子数据（对应 sidebar.html 的两级结构）
+-- 顶级：控制面板（type=1 目录，可展开）
+-- 子级：用户管理 / 商品管理（type=2 菜单，可点击链接）
+INSERT INTO `te_menu` (`pid`, `title`, `icon`, `url`, `type`, `sort`) VALUES
+    (0, '控制面板', 'icon-speedometer', NULL, 1, 1),
+    (1, '用户管理', 'icon-user', '/view/backend/user/list.html', 2, 1),
+    (1, '商品管理', 'icon-bag', '/view/backend/goods/list.html', 2, 2);
+
+-- -------------------------------------------------------------
+-- 6. 角色表 te_role（RBAC）
+--    对应 te_user.role 字段（角色标识），如 admin / user
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `te_role` (
+    `id`         INT UNSIGNED     NOT NULL AUTO_INCREMENT COMMENT '角色ID',
+    `name`       VARCHAR(32)      NOT NULL                COMMENT '角色标识（如 admin/user）',
+    `title`      VARCHAR(64)      NOT NULL                COMMENT '角色名称（如 管理员）',
+    `status`     TINYINT UNSIGNED NOT NULL DEFAULT 1      COMMENT '状态：1启用 0禁用',
+    `created_at` DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_name` (`name`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='角色表';
+
+-- -------------------------------------------------------------
+-- 7. 角色-菜单关联表 te_role_menu（RBAC）
+--    决定某个角色可访问哪些菜单节点
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `te_role_menu` (
+    `id`      INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '关联ID',
+    `role_id` INT UNSIGNED NOT NULL COMMENT '角色ID（关联 te_role.id）',
+    `menu_id` INT UNSIGNED NOT NULL COMMENT '菜单ID（关联 te_menu.id）',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_role_menu` (`role_id`, `menu_id`),
+    KEY `idx_menu_id` (`menu_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='角色-菜单关联表';
+
+-- RBAC 种子数据：
+-- admin 角色拥有全部菜单（1/2/3）
+-- user 角色仅拥有部分菜单（1/2），看不到"商品管理"
+INSERT INTO `te_role` (`name`, `title`) VALUES
+    ('admin', '管理员'),
+    ('user', '普通用户');
+
+INSERT INTO `te_role_menu` (`role_id`, `menu_id`) VALUES
+    (1, 1), (1, 2), (1, 3),   -- admin：全部菜单
+    (2, 1), (2, 2);            -- user：控制面板 + 用户管理
