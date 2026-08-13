@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>编辑用户 - TinyPHP Admin</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon.png">
+    <!-- Custom Stylesheet -->
+    <link href="../css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div id="main-wrapper">
+
+        <!-- 公共 Header（由 js/common.js 加载） -->
+        <div id="app-header"></div>
+
+        <!-- 公共 Sidebar（由 js/common.js 加载） -->
+        <div id="app-sidebar"></div>
+
+        <!-- Content body start -->
+        <div class="content-body">
+
+            <div class="row page-titles mx-0">
+                <div class="col p-md-0">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="list.html">用户管理</a></li>
+                        <li class="breadcrumb-item active" id="pageActiveTitle">编辑用户</li>
+                    </ol>
+                </div>
+                <div class="col p-md-0 text-right">
+                    <a href="list.html" class="btn btn-secondary"><i class="icon-arrow-left"></i> 返回列表</a>
+                </div>
+            </div>
+            <!-- row -->
+
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- 左侧：头像与基本信息 -->
+                    <div class="col-lg-4 col-xl-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="media align-items-center mb-4">
+                                    <img id="avatarPreview" class="mr-3 rounded-circle" src="../images/avatar/avatar-media.png" width="80" height="80" style="object-fit:cover; border:2px solid #e0e0e0;" alt="头像">
+                                    <div class="media-body">
+                                        <h5 class="mb-0" id="profileUsername">新用户</h5>
+                                        <p class="text-muted mb-0">角色：<span id="profileRole">普通用户</span></p>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <div class="custom-file mx-auto text-left" style="max-width:200px;">
+                                        <input type="file" class="custom-file-input" id="avatarInput" name="avatar" accept="image/*" onchange="previewAvatar(this)">
+                                        <label class="custom-file-label" for="avatarInput" id="avatarLabel">更换头像</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 右侧：编辑表单 -->
+                    <div class="col-lg-8 col-xl-9">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title m-0">用户信息编辑</h4>
+                            </div>
+                            <div class="card-body">
+                                <form id="userForm" enctype="multipart/form-data" class="basic-form">
+                                    <input type="hidden" id="userId" name="id">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="username">用户名</label>
+                                                <input type="text" class="form-control" id="username" name="username" placeholder="请输入用户名">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="nickname">昵称</label>
+                                                <input type="text" class="form-control" id="nickname" name="nickname" placeholder="请输入昵称">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="password">密码</label>
+                                                <input type="password" class="form-control" id="password" name="password" placeholder="留空则不修改密码">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email">邮箱</label>
+                                                <input type="email" class="form-control" id="email" name="email" placeholder="请输入邮箱">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="role">角色</label>
+                                                <select class="form-control" id="role" name="role">
+                                                    <option value="admin">管理员</option>
+                                                    <option value="user" selected>普通用户</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="status">状态</label>
+                                                <select class="form-control" id="status" name="status">
+                                                    <option value="1" selected>正常</option>
+                                                    <option value="0">禁用</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <label>备注</label>
+                                            <textarea class="form-control h-100px" id="remark" rows="3" placeholder="用户备注信息（可选）"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button type="button" class="btn btn-primary px-5" onclick="saveUser()"><i class="icon-check"></i> 保存</button>
+                                        <a href="list.html" class="btn btn-secondary px-4 ml-2">取消</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- #/ container -->
+        </div>
+        <!-- Content body end -->
+
+        <!-- 公共 Footer（由 js/common.js 加载） -->
+        <div id="app-footer"></div>
+
+    </div>
+    <!-- Main wrapper end -->
+
+    <!-- 操作结果提示 Modal -->
+    <div class="modal fade" id="msgModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div id="msgModalBody" class="mb-3"></div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../plugins/common/common.min.js"></script>
+    <script src="../js/custom.min.js"></script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/gleek.js"></script>
+    <script src="../js/styleSwitcher.js"></script>
+
+    <!-- 公共组件加载逻辑（引入公共 JS，必须在 common.min.js 之后） -->
+    <script src="../js/common.js"></script>
+
+    <!-- 用户编辑逻辑 -->
+    <script>
+        // 通用提示弹窗
+        function showMsg(title, message, type) {
+            type = type || 'info';
+            var icon = {
+                success: '<i class="fa fa-check-circle text-success" style="font-size:40px"></i>',
+                error: '<i class="fa fa-times-circle text-danger" style="font-size:40px"></i>',
+                warning: '<i class="fa fa-exclamation-triangle text-warning" style="font-size:40px"></i>',
+                info: '<i class="fa fa-info-circle text-info" style="font-size:40px"></i>'
+            };
+            $('#msgModalBody').html((icon[type] || icon.info) + '<p class="m-t-15 m-b-0">' + message + '</p>');
+            $('#msgModal').modal('show');
+        }
+
+        // 头像预览
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#avatarPreview').attr('src', e.target.result);
+                };
+                reader.readAsDataURL(input.files[0]);
+                $('#avatarLabel').text(input.files[0].name);
+            }
+        }
+
+        // 页面加载时，AJAX 获取用户数据并回填
+        $(function () {
+            // 从 URL 获取 id，例如 /user/edit.html?id=1
+            var id = new URLSearchParams(window.location.search).get('id') || '';
+            $('#userId').val(id);
+
+            if (id) {
+                // 编辑模式：AJAX 获取单个用户数据（通过框架路由 /backend/user/get）
+                $.get('/backend/user/get', { id: id }, function (res) {
+                    if (res.code === 0) {
+                        var data = res.data;
+                        $('#username').val(data.username);
+                        $('#nickname').val(data.nickname);
+                        $('#email').val(data.email || '');
+                        $('#role').val(data.role || 'user');
+                        $('#status').val(data.status || 1);
+                        $('#remark').val(data.remark || '');
+                        $('#profileUsername').text(data.nickname);
+                        $('#profileRole').text(data.role === 'admin' ? '管理员' : '普通用户');
+                        if (data.avatar) {
+                            // 假 API 返回相对路径，统一拼上 ../ 前缀（真实场景直接用完整路径）
+                            $('#avatarPreview').attr('src', data.avatar.indexOf('http') === 0 ? data.avatar : '../' + data.avatar);
+                        }
+                    } else {
+                        showMsg('提示', res.msg || '加载用户数据失败', 'error');
+                    }
+                }, 'json').fail(function () {
+                    showMsg('提示', '请求失败，请检查 API 地址', 'error');
+                });
+            } else {
+                // 新增模式：重置为默认
+                $('#pageActiveTitle').text('新增用户');
+                $('#profileUsername').text('新用户');
+                $('#profileRole').text('普通用户');
+            }
+        });
+
+        // 保存用户（AJAX 提交）
+        function saveUser() {
+            var username = $('#username').val();
+            var nickname = $('#nickname').val();
+            if (!username || !nickname) {
+                showMsg('提示', '用户名和昵称不能为空', 'warning');
+                return;
+            }
+
+            var id = $('#userId').val();
+            var formData = {
+                id: id,
+                username: username,
+                nickname: nickname,
+                email: $('#email').val(),
+                role: $('#role').val(),
+                status: $('#status').val(),
+                remark: $('#remark').val()
+            };
+
+            // AJAX 提交（假 API 演示，通过框架路由 /backend/user/save）
+            $.post('/backend/user/save', formData, function (res) {
+                if (res.code === 0) {
+                    showMsg('操作成功', res.msg, 'success');
+                } else {
+                    showMsg('提示', res.msg || '保存失败', 'error');
+                }
+            }, 'json').fail(function () {
+                showMsg('提示', '请求失败，请检查 API 地址', 'error');
+            });
+        }
+    </script>
+
+</body>
+
+</html>
