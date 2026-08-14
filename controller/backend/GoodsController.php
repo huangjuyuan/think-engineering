@@ -110,7 +110,7 @@ class GoodsController
 
             // 处理商品图片上传（若上传了新图片则覆盖 img_url）
             if (isset($_FILES['image']) && is_array($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
-                $data['img_url'] = Upload::image($_FILES['image'], 'view/backend/images/upload', 2 * 1024 * 1024);
+                $data['img_url'] = Upload::image($_FILES['image'], 'view/backend/images/goods', 2 * 1024 * 1024);
             }
 
             // 逗号分隔的标签 -> 数组

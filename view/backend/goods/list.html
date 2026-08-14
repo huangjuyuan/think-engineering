@@ -56,7 +56,7 @@
                                                 <th>ID</th>
                                                 <th>商品图片</th>
                                                 <th>商品名称</th>
-                                                <th>分类</th>
+                                                <th>标签</th>
                                                 <th>价格</th>
                                                 <th>库存</th>
                                                 <th>状态</th>
@@ -208,14 +208,14 @@
                             {
                                 data: null,
                                 render: function (data) {
-                                    var img = (data.img_url || 'view/backend/images/avatar/avatar-media.png');
+                                    var img = (data.img_url || 'view/backend/images/goods/default.jpg');
                                     var src = img.indexOf('http') === 0 ? img : '/' + img;
                                     return '<img src="' + src + '" class="rounded" width="50" height="50" alt="">';
                                 }
                             },
                             { data: 'name' },
                             {
-                                // 分类列：显示商品标签（tags），超过 15 字截断并加 ...
+                                // 标签列：显示商品标签（tags），超过 15 字截断并加 ...
                                 data: null,
                                 render: function (data) {
                                     var tags = data.tags || [];
@@ -249,7 +249,7 @@
                         ],
                         order: [[0, 'desc']],
                         columnDefs: [
-                            { targets: [1, 3, 7], orderable: false }   // 图片列、分类列、操作列不排序
+                            { targets: [1, 3, 7], orderable: false }   // 图片列、标签列、操作列不排序
                         ],
                         language: {
                             search: '搜索:',

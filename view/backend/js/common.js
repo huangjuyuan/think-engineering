@@ -43,7 +43,7 @@ function loadCurrentUser() {
         dataType: 'json',
         success: function (res) {
             if (res.code === 0 && res.data) {
-                var avatar = res.data.avatar || 'view/backend/images/avatar/avatar-media.png';
+                var avatar = res.data.avatar || 'view/backend/images/avatar/default_avarta.jpg';
                 var src = avatar.indexOf('http') === 0 ? avatar : '/' + avatar;
                 $('#headerUserAvatar').attr('src', src);
             }

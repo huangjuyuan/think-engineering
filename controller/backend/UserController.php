@@ -113,7 +113,7 @@ class UserController
 
             // 处理头像上传（若上传了新头像则写入 avatar）
             if (isset($_FILES['avatar']) && is_array($_FILES['avatar']) && $_FILES['avatar']['error'] !== UPLOAD_ERR_NO_FILE) {
-                $data['avatar'] = Upload::image($_FILES['avatar'], 'view/backend/images/upload', 2 * 1024 * 1024);
+                $data['avatar'] = Upload::image($_FILES['avatar'], 'view/backend/images/avatar', 2 * 1024 * 1024);
             }
 
             // 新增时必须设置密码；编辑时密码可选（留空则不修改）
@@ -285,7 +285,7 @@ class UserController
 
             // 确保返回头像地址（含相对路径约定，前端以 / 前缀访问）
             if (empty($info['avatar'])) {
-                $info['avatar'] = 'view/backend/images/avatar/avatar-media.png';
+                $info['avatar'] = 'view/backend/images/avatar/default_avarta.jpg';
             }
 
             Response::json($info);

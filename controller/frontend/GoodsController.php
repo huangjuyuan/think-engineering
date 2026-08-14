@@ -40,11 +40,18 @@ class GoodsController
 
             // 只返回前端需要的字段
             $list = array_map(function ($g) {
+                $img = $g['img_url'] ?? '';
+                if ($img === '') {
+                    $img = 'view/backend/images/goods/default.jpg';
+                }
+                // 统一加 / 前缀，前端可直接以相对项目根的 URL 访问
+                $img = strpos($img, 'http') === 0 ? $img : '/' . ltrim($img, '/');
+
                 return [
                     'id'          => $g['id'],
                     'name'        => $g['name'],
                     'desc'        => $g['description'] ?? '',
-                    'img'         => $this->imgUrl($g['img_url'] ?? ''),
+                    'img'         => $img,
                     'price'       => (float) $g['price'],
                     'stock'       => (int) $g['stock'],
                 ];
@@ -57,16 +64,5 @@ class GoodsController
         } catch (\Throwable $e) {
             Response::json(null, 1, $e->getMessage());
         }
-    }
-
-    /**
-     * 生成图片 URL（空则用占位图）
-     */
-    private function imgUrl(string $img): string
-    {
-        if ($img !== '') {
-            return $img;
-        }
-        return 'https://via.placeholder.com/120x120/c9d8e8/223344?text=MOTOR';
     }
 }
