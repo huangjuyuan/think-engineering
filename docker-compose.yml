@@ -1,0 +1,38 @@
+# =============================================================
+# TinyPHP 单容器全套 LAMP（Apache + PHP 8.2 + MySQL 8）
+# 一个容器内完成全套部署。
+#
+# 用法：
+#   1. docker compose up -d --build
+#   2. 访问 http://localhost
+#   3. 首次启动自动初始化 MySQL 并导入 database/migration.sql
+# =============================================================
+services:
+
+  lamp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: think_lamp
+    restart: unless-stopped
+    ports:
+      - "80:80"      # Apache
+      - "3306:3306"  # MySQL（如需避免与宿主机 MySQL 冲突，改为 "3307:3306"）
+    volumes:
+      # 代码热挂载（开发时改代码即时生效）
+      - .:/var/www/html
+      # MySQL 数据持久化（重要：防止容器重建丢失数据库）
+      - lamp_mysql_data:/var/lib/mysql
+    environment:
+      # 供 PHP 读取数据库连接信息（单容器内 MySQL 在本机 127.0.0.1）
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_NAME: think_engineering
+      DB_USER: root
+      DB_PASSWORD: root123456
+      # 供 MySQL 初始化脚本使用
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: think_engineering
+
+volumes:
+  lamp_mysql_data:

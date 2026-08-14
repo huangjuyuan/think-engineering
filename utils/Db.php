@@ -98,6 +98,24 @@ class Db
     private static function getConfig(): array
     {
         if (self::$config === null) {
+            // 优先使用环境变量配置（适用于 Docker 环境，由 docker-compose 注入）
+            $envHost = getenv('DB_HOST');
+            if ($envHost !== false && $envHost !== '') {
+                self::$config = [
+                    'default' => [
+                        'host' => $envHost,
+                        'port' => (int)(getenv('DB_PORT') ?: 3306),
+                        'database' => getenv('DB_NAME') ?: 'think_engineering',
+                        'username' => getenv('DB_USER') ?: 'root',
+                        'password' => (string)(getenv('DB_PASSWORD') ?: ''),
+                        'charset' => 'utf8mb4',
+                        'prefix' => 'te_',
+                    ],
+                ];
+                return self::$config;
+            }
+
+            // 否则读取 config/database.yaml
             self::$config = Config::get('database');
             if (empty(self::$config['default'])) {
                 self::$config = [
@@ -122,20 +140,20 @@ class Db
      */
     private function connect(array $config): void
     {
-        $host     = $config['host']     ?? '127.0.0.1';
-        $port     = $config['port']     ?? 3306;
+        $host = $config['host'] ?? '127.0.0.1';
+        $port = $config['port'] ?? 3306;
         $database = $config['database'] ?? '';
         $username = $config['username'] ?? 'root';
         $password = $config['password'] ?? '';
-        $charset  = $config['charset']  ?? 'utf8mb4';
+        $charset = $config['charset'] ?? 'utf8mb4';
 
         $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s', $host, $port, $database, $charset);
 
         $options = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // 抛异常
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // 抛异常
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // 关联数组
-            PDO::ATTR_EMULATE_PREPARES   => false,                  // 使用原生预处理
-            PDO::ATTR_PERSISTENT         => false,                  // 不常驻连接（便于开发调试）
+            PDO::ATTR_EMULATE_PREPARES => false,                  // 使用原生预处理
+            PDO::ATTR_PERSISTENT => false,                  // 不常驻连接（便于开发调试）
         ];
 
         try {
@@ -152,7 +170,7 @@ class Db
                     . "     ALTER USER '{$username}'@'%' IDENTIFIED WITH mysql_native_password BY '{$password}';\n"
                     . "  2) 或创建使用 mysql_native_password 的新数据库用户。\n"
                     . "原始错误：{$msg}",
-                    (int) $e->getCode()
+                    (int)$e->getCode()
                 );
             }
             throw $e;
@@ -172,8 +190,8 @@ class Db
     /**
      * 执行 SQL 并返回受影响行数（用于 INSERT / UPDATE / DELETE / DDL）
      *
-     * @param string $sql  SQL 语句，参数用 ? 占位
-     * @param array  $bind 绑定参数
+     * @param string $sql SQL 语句，参数用 ? 占位
+     * @param array $bind 绑定参数
      * @return int 受影响行数
      */
     public function execute(string $sql, array $bind = []): int
@@ -186,13 +204,13 @@ class Db
      * 查询单行
      *
      * @param string $sql
-     * @param array  $bind
+     * @param array $bind
      * @return array|null 有数据返回关联数组，无数据返回 null
      */
     public function fetch(string $sql, array $bind = []): ?array
     {
         $stmt = $this->prepare($sql, $bind);
-        $row  = $stmt->fetch();
+        $row = $stmt->fetch();
         return $row === false ? null : $row;
     }
 
@@ -200,7 +218,7 @@ class Db
      * 查询多行
      *
      * @param string $sql
-     * @param array  $bind
+     * @param array $bind
      * @return array
      */
     public function fetchAll(string $sql, array $bind = []): array
@@ -213,7 +231,7 @@ class Db
      * 获取单个标量值（如 COUNT(*)、MAX(id)）
      *
      * @param string $sql
-     * @param array  $bind
+     * @param array $bind
      * @return mixed
      */
     public function scalar(string $sql, array $bind = [])
@@ -226,13 +244,13 @@ class Db
      * 插入数据
      *
      * @param string $table 表名（不含前缀；若配置了 prefix 会自动拼接）
-     * @param array  $data  字段 => 值
+     * @param array $data 字段 => 值
      * @return int 自增主键 ID（无自增主键返回 0）
      */
     public function insert(string $table, array $data): int
     {
         $table = $this->withPrefix($table);
-        $cols  = array_keys($data);
+        $cols = array_keys($data);
         $place = array_fill(0, count($cols), '?');
 
         $sql = sprintf(
@@ -243,16 +261,16 @@ class Db
         );
 
         $this->execute($sql, array_values($data));
-        return (int) $this->pdo->lastInsertId();
+        return (int)$this->pdo->lastInsertId();
     }
 
     /**
      * 更新数据
      *
-     * @param string $table  表名
-     * @param array  $data   字段 => 值
-     * @param string $where  WHERE 条件（? 占位）
-     * @param array  $bind   WHERE 绑定参数
+     * @param string $table 表名
+     * @param array $data 字段 => 值
+     * @param string $where WHERE 条件（? 占位）
+     * @param array $bind WHERE 绑定参数
      * @return int 受影响行数
      */
     public function update(string $table, array $data, string $where, array $bind = []): int
@@ -279,7 +297,7 @@ class Db
      *
      * @param string $table 表名
      * @param string $where WHERE 条件
-     * @param array  $bind  绑定参数
+     * @param array $bind 绑定参数
      * @return int 受影响行数
      */
     public function delete(string $table, string $where, array $bind = []): int
@@ -367,7 +385,7 @@ class Db
      * 预处理 SQL 并绑定参数
      *
      * @param string $sql
-     * @param array  $bind
+     * @param array $bind
      * @return PDOStatement
      */
     private function prepare(string $sql, array $bind): PDOStatement
