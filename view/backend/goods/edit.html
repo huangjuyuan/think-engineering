@@ -64,22 +64,11 @@
                             <form id="goodsForm" enctype="multipart/form-data" class="basic-form">
                                 <input type="hidden" id="goodsId" name="id">
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-12">
                                         <div class="form-group">
                                             <label for="goodsName">商品名称</label>
                                             <input type="text" class="form-control" id="goodsName" name="name"
                                                    placeholder="请输入商品名称">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="category">商品分类</label>
-                                            <select class="form-control" id="category" name="category">
-                                                <option value="电子课程">电子课程</option>
-                                                <option value="实体商品">实体商品</option>
-                                                <option value="软件工具">软件工具</option>
-                                                <option value="其他">其他</option>
-                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -220,7 +209,6 @@
                 if (res.code === 0) {
                     var data = res.data;
                     $('#goodsName').val(data.name);
-                    $('#category').val(data.category || '');
                     $('#price').val(data.price);
                     $('#stock').val(data.stock);
                     $('#goodsStatus').val(data.status);
@@ -257,7 +245,6 @@
         var formData = new FormData();
         formData.append('id', id);
         formData.append('name', name);
-        formData.append('category', $('#category').val());
         formData.append('price', price);
         formData.append('stock', stock);
         formData.append('status', $('#goodsStatus').val());
