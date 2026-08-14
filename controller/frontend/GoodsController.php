@@ -26,15 +26,16 @@ class GoodsController
     /**
      * 商品列表（前端展示用）
      * GET /frontend/goods/list
-     * 参数：page, page_size（默认每页 25，5x5 布局）
+     * 参数：page, page_size（默认每页 25，5x5 布局）, keyword（搜索关键词，模糊匹配商品名称）
      */
     public function list()
     {
         try {
             $page     = max(1, intval($_GET['page'] ?? 1));
             $pageSize = max(1, min(100, intval($_GET['page_size'] ?? 25)));
+            $keyword  = trim($_GET['keyword'] ?? '');
 
-            $result = $this->model->getGoodsList($page, $pageSize, 'id ASC', '');
+            $result = $this->model->getGoodsList($page, $pageSize, 'id ASC', $keyword);
 
             // 只返回前端需要的字段
             $list = array_map(function ($g) {

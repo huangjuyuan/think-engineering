@@ -57,8 +57,16 @@ class GoodsModel
         $where = [];
         $bind = [];
         if ($keyword !== '') {
-            $where[] = 'name LIKE ?';
-            $bind[] = '%' . $keyword . '%';
+            // 搜索策略：先按标签精确匹配，匹配不到再按名称 LIKE 兜底
+            $tagMatchedIds = $this->getGoodsIdsByTag($keyword);
+            if (!empty($tagMatchedIds)) {
+                $place = implode(',', array_fill(0, count($tagMatchedIds), '?'));
+                $where[] = "id IN ($place)";
+                $bind = array_merge($bind, $tagMatchedIds);
+            } else {
+                $where[] = 'name LIKE ?';
+                $bind[] = '%' . $keyword . '%';
+            }
         }
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
@@ -83,6 +91,26 @@ class GoodsModel
         unset($g);
 
         return ['total' => $total, 'list' => $list];
+    }
+
+    /**
+     * 按标签精确匹配商品 ID
+     *
+     * 查询 te_tags 表中标签名等于关键词的商品，用于搜索时"标签优先"策略。
+     *
+     * @param string $tag 标签名（精确匹配）
+     * @return int[] 商品 ID 数组
+     */
+    public function getGoodsIdsByTag(string $tag): array
+    {
+        if ($tag === '') {
+            return [];
+        }
+        $rows = $this->db()->fetchAll(
+            "SELECT DISTINCT gid FROM te_tags WHERE name = ?",
+            [$tag]
+        );
+        return array_map('intval', array_column($rows, 'gid'));
     }
 
     /**

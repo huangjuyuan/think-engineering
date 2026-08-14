@@ -192,6 +192,56 @@
             border-left: 5px solid #2563eb;
             padding-left: 12px;
         }
+        /* 商品搜索区 */
+        .product-search {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            max-width: 560px;
+        }
+        .product-search input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1a2942;
+            outline: none;
+        }
+        .product-search input:focus {
+            border-color: #2563eb;
+        }
+        .product-search button {
+            padding: 10px 20px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .product-search button:hover {
+            background: #1d4ed8;
+        }
+        /* 搜索结果提示 */
+        .search-result-info {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+        .search-result-info span {
+            color: #2563eb;
+            font-weight: bold;
+        }
+        /* 无结果提示 */
+        .no-result {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+            font-size: 15px;
+        }
         /* 商品容器 5列布局 */
         .product-list {
             display: grid;
@@ -331,6 +381,13 @@
     <!-- ========== 商品展示区域（新增） ========== -->
     <section class="product-wrap">
         <h3 class="product-title">製品一覧</h3>
+        <!-- 搜索框 -->
+        <div class="product-search">
+            <input type="text" id="productKeyword" placeholder="商品名・型番で検索（例：TE-22BK / ブラシレス）">
+            <button type="button" onclick="searchProducts()">検索</button>
+        </div>
+        <!-- 搜索结果提示 -->
+        <div class="search-result-info" id="searchResultInfo"></div>
         <div class="product-list" id="productListBox"></div>
         <!-- 分页容器 -->
         <div class="pagination-box" id="paginationBox"></div>
@@ -339,25 +396,43 @@
 <script>
 // 商品数据源：从后端接口 /frontend/goods/list 获取（数据库 te_goods 表）
 let allProductData = [];
+let currentKeyword = '';  // 当前搜索关键词
 
 // 分页配置：5列5行 = 一页25个商品
 const pageSize = 25;
 let currentPage = 1;
 let totalPage = 1;
 
-// 从接口加载商品数据
-function loadProducts(){
-    $.get('/frontend/goods/list', { page: 1, page_size: 100 }, function(res){
+// 从接口加载商品数据（支持搜索关键词）
+function loadProducts(keyword){
+    keyword = (keyword || '').trim();
+    currentKeyword = keyword;
+    currentPage = 1;  // 搜索后重置到第一页
+
+    let params = { page: 1, page_size: 100 };
+    if (keyword !== '') {
+        params.keyword = keyword;  // 后端按名称模糊匹配
+    }
+
+    $.get('/frontend/goods/list', params, function(res){
         if (res.code === 0){
             allProductData = res.data.list || [];
             totalPage = Math.ceil(allProductData.length / pageSize);
             renderProduct();
         } else {
-            $("#productListBox").html('<p style="padding:20px;color:#94a3b8;">商品データの取得に失敗しました</p>');
+            $("#productListBox").html('<p class="no-result">商品データの取得に失敗しました</p>');
+            $("#paginationBox").html('');
         }
     }, 'json').fail(function(){
-        $("#productListBox").html('<p style="padding:20px;color:#94a3b8;">商品データの取得に失敗しました</p>');
+        $("#productListBox").html('<p class="no-result">商品データの取得に失敗しました</p>');
+        $("#paginationBox").html('');
     });
+}
+
+// 搜索商品：读取输入框关键词并加载
+function searchProducts(){
+    var keyword = $('#productKeyword').val();
+    loadProducts(keyword);
 }
 
 // 渲染当前页商品
@@ -365,6 +440,23 @@ function renderProduct(){
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
     const pageData = allProductData.slice(start, end);
+
+    // 搜索结果提示
+    let infoHtml = '';
+    if (currentKeyword !== '') {
+        infoHtml = '検索結果：<span>' + allProductData.length + '</span> 件（「' + currentKeyword + '」）';
+    } else {
+        infoHtml = '';
+    }
+    $('#searchResultInfo').html(infoHtml);
+
+    // 无结果提示
+    if (pageData.length === 0) {
+        $("#productListBox").html('<p class="no-result">該当する商品が見つかりませんでした</p>');
+        $("#paginationBox").html('');
+        return;
+    }
+
     let html = "";
     $.each(pageData, function(i, item){
         html += `
@@ -418,7 +510,13 @@ $(document).on("click", ".page-num", function(){
 
 // 页面加载完成初始化：从接口加载商品数据
 $(function(){
-    loadProducts();
+    loadProducts('');
+    // 输入框回车触发搜索
+    $('#productKeyword').on('keydown', function(e){
+        if (e.key === 'Enter') {
+            searchProducts();
+        }
+    });
 });
 </script>
 </body>
