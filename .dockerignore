@@ -1,0 +1,20 @@
+# Git
+.git
+.gitignore
+
+# Composer 缓存与本地文件（vendor 随项目复制，Dockerfile 中可选执行 composer install）
+composer.phar
+
+# IDE
+.idea
+*.iml
+
+# 日志 / 缓存 / 临时
+*.log
+*.cache
+*.tmp
+
+# 测试/临时脚本
+*_test.php
+*_tmp.php
+tmp
