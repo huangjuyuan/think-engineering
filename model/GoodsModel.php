@@ -42,7 +42,7 @@ class GoodsModel
      * @param string $keyword   可选关键字，模糊匹配 name
      * @return array ['total' => 总数, 'list' => 商品列表（含 tags）]
      */
-    public function getGoodsList(int $page = 1, int $pageSize = 10, string $order = 'id DESC', string $keyword = ''): array
+    public function getGoodsList(int $page = 1, int $pageSize = 10, string $order = 'id DESC', string $keyword = '', bool $onlyEnabled = false): array
     {
         $db = $this->db();
 
@@ -56,6 +56,10 @@ class GoodsModel
 
         $where = [];
         $bind = [];
+        // 仅查询上架商品（前端展示用）
+        if ($onlyEnabled) {
+            $where[] = 'status = 1';
+        }
         if ($keyword !== '') {
             // 搜索策略：先按标签精确匹配，匹配不到再按名称 LIKE 兜底
             $tagMatchedIds = $this->getGoodsIdsByTag($keyword);

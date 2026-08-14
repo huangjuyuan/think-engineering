@@ -35,7 +35,8 @@ class GoodsController
             $pageSize = max(1, min(100, intval($_GET['page_size'] ?? 25)));
             $keyword  = trim($_GET['keyword'] ?? '');
 
-            $result = $this->model->getGoodsList($page, $pageSize, 'id ASC', $keyword);
+            // 前端展示只返回上架商品（status=1）
+            $result = $this->model->getGoodsList($page, $pageSize, 'id ASC', $keyword, true);
 
             // 只返回前端需要的字段
             $list = array_map(function ($g) {
