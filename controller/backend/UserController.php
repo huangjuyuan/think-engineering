@@ -105,6 +105,7 @@ class UserController
             $data = [
                 'username' => trim($_POST['username'] ?? ''),
                 'nickname' => trim($_POST['nickname'] ?? ''),
+                'email'    => trim($_POST['email'] ?? ''),
                 'password' => trim($_POST['password'] ?? ''),
                 'role'     => $_POST['role'] ?? 'user',
                 'status'   => intval($_POST['status'] ?? 1),
@@ -119,6 +120,7 @@ class UserController
             $rules = [
                 'username' => 'required|alpha_dash|min:3|max:64',
                 'nickname' => 'required|max:64',
+                'email'    => 'email|max:128',
                 'role'     => 'in:admin,user',
                 'status'   => 'integer|between:0,1',
             ];
@@ -136,6 +138,7 @@ class UserController
             if ($id > 0) {
                 $update = [
                     'nickname' => $data['nickname'],
+                    'email'    => $data['email'],
                     'role'     => $data['role'],
                     'status'   => $data['status'],
                     'password' => $data['password'],
@@ -175,7 +178,7 @@ class UserController
 
             $result = $this->model->checkPassword($username, $password);
             if (!$result['ok']) {
-                Response::json(null, 1, '用户名或密码错误');
+                Response::json(null, 1, $result['message'] ?? '用户名或密码错误');
             }
 
             $user = $result['user'];
@@ -204,6 +207,7 @@ class UserController
             $data = [
                 'username' => trim($_POST['username'] ?? ''),
                 'nickname' => trim($_POST['nickname'] ?? ''),
+                'email'    => trim($_POST['email'] ?? ''),
                 'password' => trim($_POST['password'] ?? ''),
                 'role'     => 'user',
                 'status'   => 1,
@@ -212,6 +216,7 @@ class UserController
             $errors = Validator::check($data, [
                 'username' => 'required|alpha_dash|min:3|max:64',
                 'nickname' => 'required|max:64',
+                'email'    => 'email|max:128',
                 'password' => 'required|min:6|max:32',
             ]);
             if ($errors) {

@@ -9,7 +9,7 @@ use utils\JWT;
  * 用户模型
  *
  * 对接 te_user 表（表结构见 database/migration.sql）：
- *   id, username, password, nickname, role, status, last_login, created_at, updated_at
+ *   id, username, password, nickname, email, role, status, avatar, last_login, created_at, updated_at
  *
  * 通过 \utils\Db 连接类访问数据库（预处理防注入）。
  * 密码统一使用 password_hash() / password_verify()。
@@ -62,7 +62,7 @@ class UserModel
         // 分页列表（不返回 password 哈希）
         $offset = ($page - 1) * $pageSize;
         $list = $db->fetchAll(
-            "SELECT id, username, nickname, role, status, avatar, last_login, created_at, updated_at
+            "SELECT id, username, nickname, email, role, status, avatar, last_login, created_at, updated_at
              FROM te_user $whereSql
              ORDER BY id DESC
              LIMIT $pageSize OFFSET $offset",
@@ -81,7 +81,7 @@ class UserModel
     public function getUserById(int $id): ?array
     {
         return $this->db()->fetch(
-            "SELECT id, username, nickname, role, status, avatar, last_login, created_at, updated_at
+            "SELECT id, username, nickname, email, role, status, avatar, last_login, created_at, updated_at
              FROM te_user WHERE id = ?",
             [$id]
         );
@@ -125,6 +125,7 @@ class UserModel
             'nickname' => $nickname,
             'role'     => $data['role'] ?? 'user',
             'status'   => (int) ($data['status'] ?? 1),
+            'email'    => $data['email'] ?? null,
             'avatar'   => $data['avatar'] ?? null,
         ]);
     }
@@ -147,6 +148,7 @@ class UserModel
 
         $update = [];
         if (isset($data['nickname'])) $update['nickname'] = $data['nickname'];
+        if (isset($data['email']))    $update['email']    = $data['email'];
         if (isset($data['role']))     $update['role']     = $data['role'];
         if (isset($data['status']))   $update['status']   = (int) $data['status'];
         if (isset($data['last_login'])) $update['last_login'] = $data['last_login'];
@@ -187,6 +189,10 @@ class UserModel
         $user = $this->getUserByUsername($username);
         if (!$user) {
             return ['ok' => false, 'user' => null];
+        }
+        // 用户被禁用（status=0）时禁止登录
+        if ((int) $user['status'] !== 1) {
+            return ['ok' => false, 'user' => null, 'message' => '账号已被禁用，请联系管理员'];
         }
         if (!password_verify($password, $user['password'])) {
             return ['ok' => false, 'user' => null];

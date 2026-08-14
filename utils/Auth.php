@@ -52,6 +52,7 @@ class Auth
      * 从当前请求解析并校验登录用户
      *
      * 从 Authorization: Bearer <token> 提取 token，校验签名与有效期，
+     * 并实时校验数据库中的用户状态：用户不存在或被禁用（status=0）时视为未登录。
      * 成功返回 payload（uid/username/role），失败返回 null。
      *
      * @return array|null
@@ -70,8 +71,19 @@ class Auth
             return null;
         }
 
+        $uid = (int) ($claims['uid'] ?? 0);
+        if ($uid <= 0) {
+            return null;
+        }
+
+        // 实时校验数据库中的用户状态（存在且启用），确保禁用用户已签发的 token 立即失效
+        $user = (new \model\UserModel())->getUserById($uid);
+        if (!$user || (int) $user['status'] !== 1) {
+            return null;
+        }
+
         return [
-            'uid'      => $claims['uid'] ?? 0,
+            'uid'      => $uid,
             'username' => $claims['username'] ?? '',
             'role'     => $claims['role'] ?? 'guest',
         ];
