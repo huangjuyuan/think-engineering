@@ -154,6 +154,8 @@ class Db
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // 关联数组
             PDO::ATTR_EMULATE_PREPARES => false,                  // 使用原生预处理
             PDO::ATTR_PERSISTENT => false,                  // 不常驻连接（便于开发调试）
+            // 连接时立即执行 SET NAMES，确保连接字符集为 utf8mb4（避免中文乱码）
+            PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
         ];
 
         try {

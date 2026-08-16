@@ -1,38 +1,58 @@
 # =============================================================
-# TinyPHP 单容器全套 LAMP（Apache + PHP 8.2 + MySQL 8）
-# 一个容器内完成全套部署。
+# TinyPHP 多容器架构（Web + MySQL 分离）
+#   - web  : PHP 8.2 + Apache（应用容器）
+#   - mysql: MySQL 8（数据库容器，宿主机无需安装 MySQL）
 #
 # 用法：
-#   1. docker compose up -d --build
-#   2. 访问 http://localhost
-#   3. 首次启动自动初始化 MySQL 并导入 database/migration.sql
+#   1. docker-compose up -d --build
+#   2. 访问 http://localhost:8080
+#   3. MySQL 容器首次启动自动创建库并导入 database/migration.sql
 # =============================================================
+version: '3'
+
 services:
 
-  lamp:
+  # ---- PHP + Apache 应用容器 ----
+  web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: think_lamp
+    container_name: think_web
     restart: unless-stopped
     ports:
-      - "80:80"      # Apache
-      - "3306:3306"  # MySQL（如需避免与宿主机 MySQL 冲突，改为 "3307:3306"）
+      - "8080:80"          # Apache，宿主机 8080 -> 容器 80（80 被占用时用 8080）
     volumes:
       # 代码热挂载（开发时改代码即时生效）
       - .:/var/www/html
-      # MySQL 数据持久化（重要：防止容器重建丢失数据库）
-      - lamp_mysql_data:/var/lib/mysql
     environment:
-      # 供 PHP 读取数据库连接信息（单容器内 MySQL 在本机 127.0.0.1）
-      DB_HOST: 127.0.0.1
+      # 供 PHP 读取数据库连接信息（DB_HOST 指向 mysql 服务名）
+      DB_HOST: mysql
       DB_PORT: "3306"
       DB_NAME: think_engineering
       DB_USER: root
       DB_PASSWORD: root123456
-      # 供 MySQL 初始化脚本使用
+    depends_on:
+      - mysql
+
+  # ---- MySQL 数据库容器（官方镜像，自动下载） ----
+  mysql:
+    image: mysql:8.0
+    container_name: think_mysql
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    environment:
       MYSQL_ROOT_PASSWORD: root123456
       MYSQL_DATABASE: think_engineering
+    volumes:
+      # MySQL 数据持久化（防止容器重建丢失数据库）
+      - mysql_data:/var/lib/mysql
+      # 初始化脚本（用 utf8mb4 导入 migration.sql，避免中文乱码）
+      - ./docker/mysql/init/01-import.sh:/docker-entrypoint-initdb.d/01-import.sh:ro
+      - ./database/migration.sql:/docker-entrypoint-initdb.d/migration.sql:ro
 
 volumes:
-  lamp_mysql_data:
+  mysql_data:
