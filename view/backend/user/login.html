@@ -92,6 +92,7 @@
                     localStorage.setItem('loginToken', res.data.token);
                     localStorage.setItem('loginRole', res.data.user.role || 'user');
                     localStorage.setItem('loginUser', res.data.user.nickname || res.data.user.username);
+                    localStorage.setItem('loginUsername', res.data.user.username || username);
                     // 跳转到后台首页
                     window.location.href = '/view/backend/goods/list.html';
                 } else {

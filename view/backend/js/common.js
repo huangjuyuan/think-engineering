@@ -58,7 +58,26 @@ function doLogout() {
     localStorage.removeItem('loginToken');
     localStorage.removeItem('loginRole');
     localStorage.removeItem('loginUser');
+    localStorage.removeItem('loginUsername');
+    localStorage.removeItem('lockReturnUrl');
     window.location.href = '/view/backend/user/login.html';
+}
+
+/**
+ * 锁屏：保存当前页面 URL 与用户名，跳转到锁屏页
+ * 解锁成功后返回锁屏前的页面。
+ */
+function doLockScreen() {
+    // 未登录则不锁屏
+    var token = localStorage.getItem('loginToken') || '';
+    if (!token) {
+        window.location.href = '/view/backend/user/login.html';
+        return;
+    }
+    // 记录锁屏前页面，供解锁后返回
+    localStorage.setItem('lockReturnUrl', window.location.href);
+    // 跳转到锁屏页（绝对路径，适配任意子目录）
+    window.location.href = '/view/backend/user/page-lock.html';
 }
 
 /**

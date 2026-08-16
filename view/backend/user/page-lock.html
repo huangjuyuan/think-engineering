@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html class="h-100" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>锁屏 - TinyPHP Admin</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon.png">
+    <link href="../css/style.css" rel="stylesheet">
+</head>
+
+<body class="h-100">
+
+    <!-- Preloader start -->
+    <div id="preloader">
+        <div class="loader">
+            <svg class="circular" viewBox="25 25 50 50">
+                <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="3" stroke-miterlimit="10" />
+            </svg>
+        </div>
+    </div>
+    <!-- Preloader end -->
+
+    <div class="login-form-bg h-100">
+        <div class="container h-100">
+            <div class="row justify-content-center h-100">
+                <div class="col-xl-6">
+                    <div class="form-input-content">
+                        <div class="card login-form mb-0">
+                            <div class="card-body pt-5">
+                                <div class="text-center mb-4">
+                                    <img id="lockAvatar" src="../images/avatar/default_avarta.jpg" class="rounded-circle"
+                                         width="80" height="80" style="object-fit:cover; border:2px solid #e0e0e0;" alt="头像">
+                                    <h5 class="mt-3 mb-0" id="lockUsername">用户</h5>
+                                    <p class="text-muted mb-0">已锁定，请输入密码解锁</p>
+                                </div>
+                                <form class="mt-4 mb-3 login-input" id="lockForm">
+                                    <div class="form-group">
+                                        <input type="password" class="form-control" id="lockPassword" name="password" placeholder="请输入密码" autocomplete="current-password">
+                                    </div>
+                                    <div id="lockMsg" class="text-danger mb-2" style="min-height:20px;"></div>
+                                    <button type="button" class="btn login-form__btn submit w-100" id="unlockBtn" onclick="doUnlock()">解 锁</button>
+                                </form>
+                                <p class="mt-3 login-form__footer text-center">
+                                    <a href="/view/backend/user/login.html" class="text-primary" onclick="clearLock()">重新登录</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../plugins/common/common.min.js"></script>
+    <script src="../js/custom.min.js"></script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/gleek.js"></script>
+    <script src="../js/styleSwitcher.js"></script>
+
+    <script>
+        // 锁屏页逻辑
+        // 说明：锁屏前会保存 loginToken / loginUser 等本地登录态，
+        //       并记录锁屏前的页面 URL（lockReturnUrl），解锁成功后跳回。
+
+        // 页面加载：校验是否已登录，显示当前用户信息
+        $(function () {
+            var token = localStorage.getItem('loginToken') || '';
+            if (!token) {
+                // 未登录，直接去登录页
+                window.location.href = '/view/backend/user/login.html';
+                return;
+            }
+            loadLockUser();
+        });
+
+        // 加载当前用户信息（头像 + 昵称）
+        function loadLockUser() {
+            var token = localStorage.getItem('loginToken') || '';
+            var nickname = localStorage.getItem('loginUser') || '用户';
+            $('#lockUsername').text(nickname);
+
+            $.ajax({
+                url: '/backend/user/profile',
+                type: 'GET',
+                headers: { 'Authorization': 'Bearer ' + token },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 0 && res.data) {
+                        $('#lockUsername').text(res.data.nickname || nickname);
+                        var avatar = res.data.avatar || 'view/backend/images/avatar/default_avarta.jpg';
+                        var src = avatar.indexOf('http') === 0 ? avatar : '/' + avatar;
+                        $('#lockAvatar').attr('src', src);
+                    }
+                }
+            });
+        }
+
+        // 解锁：用当前用户名 + 输入的密码调用登录接口校验
+        function doUnlock() {
+            var password = $('#lockPassword').val();
+            if (!password) {
+                $('#lockMsg').text('请输入密码');
+                return;
+            }
+            $('#lockMsg').text('');
+            $('#unlockBtn').prop('disabled', true).text('解锁中...');
+
+            // 从本地保存的用户信息里取用户名
+            var loginUser = localStorage.getItem('loginUser') || '';
+            // 这里需要用户名，最好单独存 username
+            var username = localStorage.getItem('loginUsername') || loginUser;
+
+            if (!username) {
+                $('#lockMsg').text('无法获取当前用户名，请重新登录');
+                $('#unlockBtn').prop('disabled', false).text('解 锁');
+                return;
+            }
+
+            $.post('/backend/user/login', { username: username, password: password }, function (res) {
+                if (res.code === 0) {
+                    // 解锁成功：更新 token，返回锁屏前的页面
+                    localStorage.setItem('loginToken', res.data.token);
+                    localStorage.setItem('loginRole', res.data.user.role || 'user');
+                    localStorage.setItem('loginUser', res.data.user.nickname || username);
+                    localStorage.setItem('loginUsername', res.data.user.username || username);
+
+                    var ret = localStorage.getItem('lockReturnUrl') || '/view/backend/goods/list.html';
+                    localStorage.removeItem('lockReturnUrl');
+                    window.location.href = ret;
+                } else {
+                    $('#unlockBtn').prop('disabled', false).text('解 锁');
+                    $('#lockMsg').text(res.msg || '密码错误');
+                    $('#lockPassword').val('');
+                }
+            }, 'json').fail(function () {
+                $('#unlockBtn').prop('disabled', false).text('解 锁');
+                $('#lockMsg').text('解锁请求失败，请重试');
+            });
+        }
+
+        // 清除锁屏记录（重新登录时调用）
+        function clearLock() {
+            localStorage.removeItem('lockReturnUrl');
+        }
+
+        // 回车解锁
+        $(function () {
+            $('#lockPassword').on('keydown', function (e) {
+                if (e.key === 'Enter') { doUnlock(); }
+            });
+        });
+    </script>
+</body>
+</html>
