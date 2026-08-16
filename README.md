@@ -25,18 +25,10 @@
 ## 三、一键部署
 
 ```bash
-cd /media/akira/TOSHIBA/works/php/think-engineering
+cd /YOUR_FOLDER/think-engineering
 
-# 构建并启动 web + mysql（必须加 DOCKER_BUILDKIT=0，见下方注意事项）
-DOCKER_BUILDKIT=0 docker-compose up -d --build
-```
-
-> **⚠️ 重要**：构建时必须加 `DOCKER_BUILDKIT=0`。
-> 当前机器内核（Deepin 定制）对 BuildKit 的 `clone3` seccomp 过滤存在兼容问题，会报：
-> ```
-> error adding seccomp filter rule for syscall clone3: permission denied
-> ```
-> `DOCKER_BUILDKIT=0` 使用旧版 builder 可正常构建。
+# 构建并启动 web + mysql
+docker-compose up -d --build
 
 ## 四、访问地址
 
