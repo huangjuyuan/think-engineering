@@ -38,7 +38,7 @@ docker-compose up -d --build
 | 前端商品页 | http://localhost:8080/view/frontend/index.html |
 | 登录账号 | admin / 123456 |
 | MySQL | `mysql -h127.0.0.1 -P3307 -uroot -proot123456` |
-
+···
 
 ---
 
