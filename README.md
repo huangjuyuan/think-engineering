@@ -42,6 +42,10 @@ docker-compose up -d --build
 ```
 
 ## 四、预览
+![我的照片](./FireShot Capture 033 - THINK・ENGINEERING シンクエンジニアリング株式会社 - [localhost].png)
+![我的照片](./FireShot Capture 034 - 商品管理 - TinyPHP Admin - [localhost].png)
+![我的照片](./FireShot Capture 037 - 节点管理 - TinyPHP Admin - [localhost].png)
+
 
 ---
 
