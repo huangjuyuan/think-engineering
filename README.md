@@ -55,6 +55,10 @@ docker-compose up -d --build
 
 ![节点管理](./screenshot-037.png)
 
+**后台用户管理**
+![用户管理](./screenshot-038.png)
+
+
 
 ---
 
